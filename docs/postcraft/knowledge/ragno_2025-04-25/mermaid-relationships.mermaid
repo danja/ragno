@@ -1,0 +1,7 @@
+classDiagram
+    Entity --> SemanticUnit: hasSemanticUnit
+    Entity --> Attribute: hasAttribute
+    Relationship --> Entity: hasSourceEntity
+    Relationship --> Entity: hasTargetEntity
+    SemanticUnit --> Text: hasText
+    HighLevelElement --> HighLevelOverview: hasHighLevelOverview

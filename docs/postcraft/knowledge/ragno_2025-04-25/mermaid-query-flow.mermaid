@@ -1,0 +1,54 @@
+sequenceDiagram
+    participant User
+    participant QueryProcessor as Query Processor
+    participant LLM as LLM Service
+    participant SparqlEngine as SPARQL Engine
+    participant GraphStore as RDF Graph Store
+    participant VectorStore as Vector Store
+    
+    User->>QueryProcessor: Submit query
+    QueryProcessor->>LLM: Extract entities from query
+    LLM-->>QueryProcessor: Return extracted entities
+    
+    %% Dual Search
+    QueryProcessor->>GraphStore: Create query instance
+    QueryProcessor->>VectorStore: Get query embedding
+    
+    par Exact Matching
+        QueryProcessor->>SparqlEngine: Exact match on entities and overviews
+        SparqlEngine->>GraphStore: Execute SPARQL query
+        GraphStore-->>SparqlEngine: Return matching nodes
+        SparqlEngine-->>QueryProcessor: Return exact match results
+    and Vector Similarity
+        QueryProcessor->>VectorStore: Find similar nodes
+        VectorStore-->>QueryProcessor: Return vector similarity results
+    end
+    
+    QueryProcessor->>GraphStore: Add entry nodes to query
+    
+    %% Shallow PPR
+    QueryProcessor->>SparqlEngine: Execute PPR (2 iterations)
+    SparqlEngine->>GraphStore: Execute SPARQL query
+    GraphStore-->>SparqlEngine: Return cross nodes with scores
+    SparqlEngine-->>QueryProcessor: Return cross nodes
+    
+    QueryProcessor->>GraphStore: Add cross nodes to query
+    
+    %% Filter Retrieval Nodes
+    QueryProcessor->>SparqlEngine: Filter for retrievable nodes
+    SparqlEngine->>GraphStore: Execute SPARQL query
+    GraphStore-->>SparqlEngine: Return filtered nodes
+    SparqlEngine-->>QueryProcessor: Return retrieval nodes
+    
+    QueryProcessor->>GraphStore: Add retrieval nodes to query
+    
+    %% Generate Content
+    QueryProcessor->>SparqlEngine: Construct complete result graph
+    SparqlEngine->>GraphStore: Execute CONSTRUCT query
+    GraphStore-->>SparqlEngine: Return result subgraph
+    SparqlEngine-->>QueryProcessor: Return result context
+    
+    QueryProcessor->>LLM: Generate answer from context
+    LLM-->>QueryProcessor: Return generated answer
+    
+    QueryProcessor-->>User: Return answer

@@ -1,0 +1,145 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nrag: <http://example.org/noderag#>
+PREFIX ex: <http://example.org/instance#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# Create attribute nodes for important entities based on centrality metrics
+INSERT {
+    GRAPH <http://example.org/graph/augmentation> {
+        ?attr a nrag:Attribute ;
+            nrag:hasContent ?attrContent ;
+            nrag:isRetrievable true ;
+            nrag:isEntryPoint true .
+            
+        ?entity nrag:hasAttribute ?attr .
+    }
+}
+WHERE {
+    # Select important entities by betweenness centrality and k-core
+    {
+        SELECT ?entity ?entityLabel
+        WHERE {
+            GRAPH <http://example.org/graph/decomposition> {
+                ?entity a nrag:Entity ;
+                    rdfs:label ?entityLabel .
+                
+                # Count connections as a proxy for importance
+                {
+                    SELECT ?entity (COUNT(?semunit) AS ?connections) (COUNT(?rel) AS ?relationships)
+                    WHERE {
+                        # Get semantic unit connections
+                        {
+                            ?entity nrag:hasSemanticUnit ?semunit .
+                        }
+                        UNION
+                        # Get relationship connections
+                        {
+                            {
+                                ?rel nrag:hasSourceEntity ?entity .
+                            }
+                            UNION
+                            {
+                                ?rel nrag:hasTargetEntity ?entity .
+                            }
+                        }
+                    }
+                    GROUP BY ?entity
+                }
+            }
+            # Filter for important entities (simulating k-core and betweenness centrality)
+            FILTER(?connections > 1 || ?relationships > 1)
+        }
+    }
+    
+    # Collect related information (semantic units and relationships)
+    {
+        SELECT ?entity ?entityLabel (GROUP_CONCAT(?content; separator=" | ") AS ?relatedInfo)
+        WHERE {
+            {
+                # Get information from semantic units
+                GRAPH <http://example.org/graph/decomposition> {
+                    ?entity nrag:hasSemanticUnit ?semunit .
+                    ?semunit nrag:hasContent ?content .
+                }
+            }
+            UNION
+            {
+                # Get information from relationships
+                GRAPH <http://example.org/graph/decomposition> {
+                    {
+                        ?rel nrag:hasSourceEntity ?entity ;
+                            nrag:hasContent ?content .
+                    }
+                    UNION
+                    {
+                        ?rel nrag:hasTargetEntity ?entity ;
+                            nrag:hasContent ?content .
+                    }
+                }
+            }
+        }
+        GROUP BY ?entity ?entityLabel
+    }
+    
+    # Simulate LLM summarization for attributes
+    # In a real system, this would be sent to an LLM
+    BIND(CONCAT("Attribute summary for ", ?entityLabel, ": ", ?relatedInfo) AS ?attrContent)
+    
+    # Generate new URI for attribute
+    BIND(IRI(CONCAT(STR(ex:), "attr_", STRUUID())) AS ?attr)
+}
+
+# Create community structure and high-level elements
+INSERT {
+    GRAPH <http://example.org/graph/augmentation> {
+        # Create community
+        ?community a nrag:Community ;
+            rdfs:label ?communityLabel .
+            
+        # Assign nodes to community
+        ?node nrag:inCommunity ?community .
+        
+        # Create high-level element
+        ?hlElement a nrag:HighLevelElement ;
+            nrag:hasContent ?hlContent ;
+            nrag:isRetrievable true ;
+            nrag:isEntryPoint true .
+            
+        # Create high-level overview
+        ?hlOverview a nrag:HighLevelOverview ;
+            rdfs:label ?hlTitle ;
+            nrag:isRetrievable false ;
+            nrag:isEntryPoint true .
+            
+        # Connect high-level element to overview and community
+        ?hlElement nrag:hasHighLevelOverview ?hlOverview .
+        ?community nrag:hasHighLevelElement ?hlElement .
+    }
+}
+WHERE {
+    # Simulate community detection
+    # In a real system, this would use a graph clustering algorithm
+    VALUES (?communityId ?communityLabel ?communityNodePattern ?hlTitle ?hlContent) {
+        (ex:community1 "AI Research Community" "artificial intelligence" "AI Recognition Trends" "The field of artificial intelligence is increasingly recognized for its contributions to science and society, with prestigious awards being given to AI researchers.")
+        (ex:community2 "Neural Networks Community" "neural network" "Neural Networks Evolution" "Neural networks have evolved from theoretical concepts to powerful practical tools, transforming many fields through deep learning approaches.")
+    }
+    
+    # Get nodes that should be in this community
+    GRAPH <http://example.org/graph/decomposition> {
+        ?node a ?type .
+        ?node rdfs:label ?nodeLabel .
+        FILTER(?type IN (nrag:Entity, nrag:SemanticUnit, nrag:Relationship))
+        
+        # Match by label or URI
+        FILTER(
+            BOUND(?nodeLabel) && CONTAINS(LCASE(?nodeLabel), ?communityNodePattern) ||
+            CONTAINS(LCASE(STR(?node)), ?communityNodePattern)
+        )
+    }
+    
+    # Generate new URIs
+    BIND(IF(BOUND(?communityId), ?communityId, IRI(CONCAT(STR(ex:), "community_", STRUUID()))) AS ?community)
+    BIND(IRI(CONCAT(STR(ex:), "hl_", STRUUID())) AS ?hlElement)
+    BIND(IRI(CONCAT(STR(ex:), "hlo_", STRUUID())) AS ?hlOverview)
+}

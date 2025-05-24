@@ -1,0 +1,87 @@
+classDiagram
+    class Node {
+        +hasContent: string
+        +isRetrievable: boolean
+        +isEntryPoint: boolean
+        +hasPPRScore: float
+        +hasSimilarityScore: float
+    }
+    
+    class Entity {
+        +label: string
+    }
+    
+    class Relationship {
+        +label: string
+        +hasSourceEntity: Entity
+        +hasTargetEntity: Entity
+    }
+    
+    class SemanticUnit {
+        +hasText: Text
+    }
+    
+    class Attribute {
+    }
+    
+    class HighLevelElement {
+        +hasHighLevelOverview: HighLevelOverview
+    }
+    
+    class HighLevelOverview {
+        +label: string
+    }
+    
+    class Text {
+        +hasSourceDocument: Document
+    }
+    
+    class Community {
+        +label: string
+        +hasHighLevelElement: HighLevelElement
+    }
+    
+    class Embedding {
+        +hasContent: string
+    }
+    
+    class Document {
+    }
+    
+    class Corpus {
+        +hasDocument: Document
+    }
+    
+    class Query {
+        +hasQueryText: string
+        +hasQueryEmbedding: Embedding
+        +hasEntryNode: Node
+        +hasCrossNode: Node
+        +hasRetrievalNode: Node
+    }
+    
+    %% Class hierarchy
+    Node <|-- Entity
+    Node <|-- Relationship
+    Node <|-- SemanticUnit
+    Node <|-- Attribute
+    Node <|-- HighLevelElement
+    Node <|-- HighLevelOverview
+    Node <|-- Text
+    
+    %% Relationships
+    Entity "1" -- "0..*" SemanticUnit : hasSemanticUnit
+    Entity "1" -- "0..*" Attribute : hasAttribute
+    Relationship "0..*" -- "1" Entity : hasSourceEntity
+    Relationship "0..*" -- "1" Entity : hasTargetEntity
+    SemanticUnit "0..*" -- "1" Text : hasText
+    HighLevelElement "0..*" -- "1" HighLevelOverview : hasHighLevelOverview
+    Community "1" -- "0..*" HighLevelElement : hasHighLevelElement
+    Node "0..*" -- "1" Community : inCommunity
+    Node "1" -- "0..1" Embedding : hasEmbedding
+    Corpus "1" -- "0..*" Document : hasDocument
+    Node "0..*" -- "0..*" Node : connectsTo
+    Query "1" -- "0..*" Node : hasEntryNode
+    Query "1" -- "0..*" Node : hasCrossNode
+    Query "1" -- "0..*" Node : hasRetrievalNode
+    Query "1" -- "0..1" Embedding : hasQueryEmbedding

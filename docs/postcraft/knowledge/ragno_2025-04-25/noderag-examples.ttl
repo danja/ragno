@@ -1,0 +1,183 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix nrag: <http://example.org/noderag#> .
+@prefix ex: <http://example.org/instance#> .
+
+# Document and Corpus
+ex:corpus1 a nrag:Corpus ;
+    rdfs:label "AI Research Corpus" .
+
+ex:doc1 a nrag:Document ;
+    rdfs:label "AI Innovations Paper" ;
+    nrag:hasContent "Geoffrey Hinton was awarded the Nobel Prize in 2023 for his groundbreaking contributions to artificial intelligence, particularly in deep learning. His pioneering work on backpropagation laid the foundation for modern neural networks, influencing both academia and industry." .
+
+ex:corpus1 nrag:hasDocument ex:doc1 .
+
+# Text Chunks
+ex:text1 a nrag:Text ;
+    nrag:hasContent "Geoffrey Hinton was awarded the Nobel Prize in 2023 for his groundbreaking contributions to artificial intelligence, particularly in deep learning." ;
+    nrag:hasSourceDocument ex:doc1 ;
+    nrag:isRetrievable true ;
+    nrag:isEntryPoint false .
+
+ex:text2 a nrag:Text ;
+    nrag:hasContent "His pioneering work on backpropagation laid the foundation for modern neural networks, influencing both academia and industry." ;
+    nrag:hasSourceDocument ex:doc1 ;
+    nrag:isRetrievable true ;
+    nrag:isEntryPoint false .
+
+# Entities
+ex:entity1 a nrag:Entity ;
+    rdfs:label "Geoffrey Hinton" ;
+    nrag:isRetrievable false ;
+    nrag:isEntryPoint true .
+
+ex:entity2 a nrag:Entity ;
+    rdfs:label "Nobel Prize" ;
+    nrag:isRetrievable false ;
+    nrag:isEntryPoint true .
+
+ex:entity3 a nrag:Entity ;
+    rdfs:label "artificial intelligence" ;
+    nrag:isRetrievable false ;
+    nrag:isEntryPoint true .
+
+ex:entity4 a nrag:Entity ;
+    rdfs:label "deep learning" ;
+    nrag:isRetrievable false ;
+    nrag:isEntryPoint true .
+
+ex:entity5 a nrag:Entity ;
+    rdfs:label "backpropagation" ;
+    nrag:isRetrievable false ;
+    nrag:isEntryPoint true .
+
+ex:entity6 a nrag:Entity ;
+    rdfs:label "neural networks" ;
+    nrag:isRetrievable false ;
+    nrag:isEntryPoint true .
+
+# Relationships
+ex:rel1 a nrag:Relationship ;
+    rdfs:label "was awarded" ;
+    nrag:hasSourceEntity ex:entity1 ;
+    nrag:hasTargetEntity ex:entity2 ;
+    nrag:hasContent "Geoffrey Hinton received the Nobel Prize" ;
+    nrag:isRetrievable true ;
+    nrag:isEntryPoint false .
+
+ex:rel2 a nrag:Relationship ;
+    rdfs:label "contributed to" ;
+    nrag:hasSourceEntity ex:entity1 ;
+    nrag:hasTargetEntity ex:entity3 ;
+    nrag:hasContent "Geoffrey Hinton contributed to artificial intelligence" ;
+    nrag:isRetrievable true ;
+    nrag:isEntryPoint false .
+
+ex:rel3 a nrag:Relationship ;
+    rdfs:label "invented" ;
+    nrag:hasSourceEntity ex:entity1 ;
+    nrag:hasTargetEntity ex:entity5 ;
+    nrag:hasContent "Geoffrey Hinton invented backpropagation" ;
+    nrag:isRetrievable true ;
+    nrag:isEntryPoint false .
+
+# Semantic Units
+ex:semunit1 a nrag:SemanticUnit ;
+    nrag:hasContent "Hinton was awarded the Nobel Prize for inventing backpropagation" ;
+    nrag:hasSourceDocument ex:doc1 ;
+    nrag:hasText ex:text1 ;
+    nrag:isRetrievable true ;
+    nrag:isEntryPoint true .
+
+ex:semunit2 a nrag:SemanticUnit ;
+    nrag:hasContent "Backpropagation is fundamental to modern neural networks" ;
+    nrag:hasSourceDocument ex:doc1 ;
+    nrag:hasText ex:text2 ;
+    nrag:isRetrievable true ;
+    nrag:isEntryPoint true .
+
+# Connect entities to semantic units
+ex:entity1 nrag:hasSemanticUnit ex:semunit1 .
+ex:entity2 nrag:hasSemanticUnit ex:semunit1 .
+ex:entity5 nrag:hasSemanticUnit ex:semunit1 .
+ex:entity5 nrag:hasSemanticUnit ex:semunit2 .
+ex:entity6 nrag:hasSemanticUnit ex:semunit2 .
+
+# Attributes
+ex:attr1 a nrag:Attribute ;
+    nrag:hasContent "Geoffrey Hinton, often referred to as the 'Godfather of Deep Learning,' is a pioneer in the field of artificial intelligence. In 2023, he was awarded the Nobel Prize for his contributions to AI and deep learning." ;
+    nrag:isRetrievable true ;
+    nrag:isEntryPoint true .
+
+ex:entity1 nrag:hasAttribute ex:attr1 .
+
+# Communities
+ex:community1 a nrag:Community ;
+    rdfs:label "AI Pioneers" .
+
+# High-Level Elements
+ex:hl1 a nrag:HighLevelElement ;
+    nrag:hasContent "The Nobel Prize is increasingly recognizing contributions to artificial intelligence, highlighting the field's growing importance and impact on society." ;
+    nrag:isRetrievable true ;
+    nrag:isEntryPoint true .
+
+# High-Level Overview
+ex:hlo1 a nrag:HighLevelOverview ;
+    rdfs:label "AI Recognition Trend" ;
+    nrag:isRetrievable false ;
+    nrag:isEntryPoint true .
+
+ex:hl1 nrag:hasHighLevelOverview ex:hlo1 .
+ex:community1 nrag:hasHighLevelElement ex:hl1 .
+
+# Assign nodes to communities
+ex:entity1 nrag:inCommunity ex:community1 .
+ex:entity3 nrag:inCommunity ex:community1 .
+ex:entity4 nrag:inCommunity ex:community1 .
+ex:semunit1 nrag:inCommunity ex:community1 .
+ex:attr1 nrag:inCommunity ex:community1 .
+ex:rel1 nrag:inCommunity ex:community1 .
+ex:rel2 nrag:inCommunity ex:community1 .
+
+# Embeddings
+ex:emb1 a nrag:Embedding ;
+    nrag:hasContent "[0.1, 0.2, 0.3, 0.4, 0.5]"^^xsd:string .
+
+ex:emb2 a nrag:Embedding ;
+    nrag:hasContent "[0.2, 0.3, 0.4, 0.5, 0.6]"^^xsd:string .
+
+ex:emb3 a nrag:Embedding ;
+    nrag:hasContent "[0.3, 0.4, 0.5, 0.6, 0.7]"^^xsd:string .
+
+# Assign embeddings to nodes
+ex:semunit1 nrag:hasEmbedding ex:emb1 .
+ex:semunit2 nrag:hasEmbedding ex:emb2 .
+ex:attr1 nrag:hasEmbedding ex:emb3 .
+
+# Query example
+ex:query1 a nrag:Query ;
+    nrag:hasQueryText "Who received the Nobel Prize for AI?" ;
+    nrag:hasQueryEmbedding ex:emb4 .
+
+ex:emb4 a nrag:Embedding ;
+    nrag:hasContent "[0.15, 0.25, 0.35, 0.45, 0.55]"^^xsd:string .
+
+# Query results
+ex:query1 nrag:hasEntryNode ex:entity1 .
+ex:query1 nrag:hasEntryNode ex:entity2 .
+ex:query1 nrag:hasCrossNode ex:semunit1 .
+ex:query1 nrag:hasCrossNode ex:attr1 .
+ex:query1 nrag:hasRetrievalNode ex:semunit1 .
+ex:query1 nrag:hasRetrievalNode ex:attr1 .
+
+# PPR Scores
+ex:semunit1 nrag:hasPPRScore "0.85"^^xsd:float .
+ex:attr1 nrag:hasPPRScore "0.72"^^xsd:float .
+ex:semunit2 nrag:hasPPRScore "0.43"^^xsd:float .
+
+# Similarity Scores
+ex:semunit1 nrag:hasSimilarityScore "0.92"^^xsd:float .
+ex:attr1 nrag:hasSimilarityScore "0.88"^^xsd:float .
+ex:semunit2 nrag:hasSimilarityScore "0.65"^^xsd:float .

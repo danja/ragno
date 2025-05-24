@@ -1,0 +1,102 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX nrag: <http://example.org/noderag#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# Create named graph for Ontology
+INSERT DATA {
+    GRAPH <http://example.org/graph/ontology> {
+        <http://example.org/graph/ontology> a owl:Ontology ;
+            dcterms:title "NodeRAG Ontology Graph" ;
+            dcterms:description "Contains the NodeRAG ontology schema" ;
+            dcterms:created "2025-04-24T00:00:00Z"^^xsd:dateTime .
+    }
+}
+
+# Create named graph for Corpus Management
+INSERT DATA {
+    GRAPH <http://example.org/graph/corpus> {
+        <http://example.org/graph/corpus> a owl:Ontology ;
+            dcterms:title "NodeRAG Corpus Graph" ;
+            dcterms:description "Contains document and text chunk data" ;
+            dcterms:created "2025-04-24T00:00:00Z"^^xsd:dateTime .
+    }
+}
+
+# Create named graph for Graph Decomposition
+INSERT DATA {
+    GRAPH <http://example.org/graph/decomposition> {
+        <http://example.org/graph/decomposition> a owl:Ontology ;
+            dcterms:title "NodeRAG Decomposition Graph" ;
+            dcterms:description "Contains semantic units, entities, and relationships" ;
+            dcterms:created "2025-04-24T00:00:00Z"^^xsd:dateTime .
+    }
+}
+
+# Create named graph for Graph Augmentation
+INSERT DATA {
+    GRAPH <http://example.org/graph/augmentation> {
+        <http://example.org/graph/augmentation> a owl:Ontology ;
+            dcterms:title "NodeRAG Augmentation Graph" ;
+            dcterms:description "Contains attributes, communities, and high-level elements" ;
+            dcterms:created "2025-04-24T00:00:00Z"^^xsd:dateTime .
+    }
+}
+
+# Create named graph for Graph Enrichment
+INSERT DATA {
+    GRAPH <http://example.org/graph/enrichment> {
+        <http://example.org/graph/enrichment> a owl:Ontology ;
+            dcterms:title "NodeRAG Enrichment Graph" ;
+            dcterms:description "Contains embeddings and HNSW semantic edges" ;
+            dcterms:created "2025-04-24T00:00:00Z"^^xsd:dateTime .
+    }
+}
+
+# Create named graph for Search and Retrieval
+INSERT DATA {
+    GRAPH <http://example.org/graph/search> {
+        <http://example.org/graph/search> a owl:Ontology ;
+            dcterms:title "NodeRAG Search Graph" ;
+            dcterms:description "Contains queries, entry points, and retrieval results" ;
+            dcterms:created "2025-04-24T00:00:00Z"^^xsd:dateTime .
+    }
+}
+
+# Copy ontology definitions to the ontology graph
+INSERT {
+    GRAPH <http://example.org/graph/ontology> {
+        ?s ?p ?o .
+    }
+}
+WHERE {
+    # Get ontology from default graph or another source
+    VALUES ?ontologySource { nrag: } # URL of the ontology
+    ?s ?p ?o .
+    FILTER(STRSTARTS(STR(?s), STR(?ontologySource)) || 
+           STRSTARTS(STR(?p), STR(?ontologySource)) || 
+           STRSTARTS(STR(?o), STR(?ontologySource)))
+}
+
+# List all named graphs and their contents
+SELECT ?graph (COUNT(?s) AS ?tripleCount)
+WHERE {
+    # Get graph values directly
+    VALUES ?graph {
+        <http://example.org/graph/ontology>
+        <http://example.org/graph/corpus>
+        <http://example.org/graph/decomposition>
+        <http://example.org/graph/augmentation>
+        <http://example.org/graph/enrichment>
+        <http://example.org/graph/search>
+    }
+    
+    # Count triples in each graph
+    GRAPH ?graph {
+        ?s ?p ?o .
+    }
+}
+GROUP BY ?graph
+ORDER BY ?graph

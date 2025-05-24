@@ -1,0 +1,76 @@
+classDiagram
+    class Node {
+        +hasContent: string
+        +isRetrievable: boolean
+        +isEntryPoint: boolean
+        +hasPPRScore: float
+        +hasSimilarityScore: float
+    }
+    
+    class Entity {
+        +label: string
+    }
+    
+    class Relationship {
+        +label: string
+    }
+    
+    class SemanticUnit {
+    }
+    
+    class Attribute {
+    }
+    
+    class HighLevelElement {
+    }
+    
+    class HighLevelOverview {
+        +label: string
+    }
+    
+    class Text {
+    }
+    
+    class Community {
+        +label: string
+    }
+    
+    class Embedding {
+        +hasContent: string
+    }
+    
+    class Document {
+    }
+    
+    class Corpus {
+    }
+    
+    class Query {
+        +hasQueryText: string
+    }
+    
+    %% Class hierarchy
+    Node <|-- Entity
+    Node <|-- Relationship
+    Node <|-- SemanticUnit
+    Node <|-- Attribute
+    Node <|-- HighLevelElement
+    Node <|-- HighLevelOverview
+    Node <|-- Text
+    
+    %% Relationships
+    Entity --> SemanticUnit : hasSemanticUnit
+    Entity --> Attribute : hasAttribute
+    Relationship --> Entity : hasSourceEntity
+    Relationship --> Entity : hasTargetEntity
+    SemanticUnit --> Text : hasText
+    HighLevelElement --> HighLevelOverview : hasHighLevelOverview
+    Community --> HighLevelElement : hasHighLevelElement
+    Node --> Community : inCommunity
+    Node --> Embedding : hasEmbedding
+    Corpus --> Document : hasDocument
+    Node --> Node : connectsTo
+    Query --> Node : hasEntryNode
+    Query --> Node : hasCrossNode
+    Query --> Node : hasRetrievalNode
+    Query --> Embedding : hasQueryEmbedding

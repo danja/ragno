@@ -1,0 +1,179 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nrag: <http://example.org/noderag#>
+PREFIX ex: <http://example.org/instance#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# 1. Dual search to find entry points for a query
+SELECT ?node ?type ?label ?content ?score ?isExactMatch
+WHERE {
+    # Get query 
+    VALUES ?query { ex:query1 }
+    ?query a nrag:Query ;
+        nrag:hasQueryText ?queryText .
+    
+    # Extract entities from query
+    # In a real system, this would be done by an LLM
+    VALUES (?query ?extractedEntity) {
+        (ex:query1 "Nobel Prize")
+        (ex:query1 "AI")
+    }
+    
+    {
+        # Exact matching on entity and overview nodes
+        ?node a ?type .
+        ?node rdfs:label ?label .
+        FILTER(?type IN (nrag:Entity, nrag:HighLevelOverview))
+        FILTER(CONTAINS(LCASE(?label), LCASE(?extractedEntity)))
+        BIND(1.0 AS ?score)
+        BIND(true AS ?isExactMatch)
+        OPTIONAL { ?node nrag:hasContent ?content }
+    }
+    UNION
+    {
+        # Vector similarity on retrievable nodes
+        ?node a ?type .
+        ?node nrag:hasEmbedding ?nodeEmb .
+        ?node nrag:isEntryPoint true .
+        ?node nrag:hasContent ?content .
+        OPTIONAL { ?node rdfs:label ?label }
+        
+        # Simulate embedding similarity calculation
+        # In a real system, this would use a vector similarity function
+        VALUES (?node ?score) {
+            (ex:semunit1 "0.92"^^xsd:float)
+            (ex:attr1 "0.88"^^xsd:float)
+            (ex:hl1 "0.75"^^xsd:float)
+        }
+        
+        FILTER(?score > 0.7)  # Threshold for similarity
+        BIND(false AS ?isExactMatch)
+    }
+}
+ORDER BY DESC(?isExactMatch) DESC(?score)
+LIMIT 10
+
+# 2. Update query with entry points
+INSERT {
+    GRAPH <http://example.org/graph/search> {
+        ?query nrag:hasEntryNode ?node .
+    }
+}
+WHERE {
+    VALUES ?query { ex:query1 }
+    ?query a nrag:Query .
+    
+    # Get entry points from dual search results
+    # In a real system, this would use the results from the previous query
+    VALUES ?node {
+        ex:entity1
+        ex:entity2
+        ex:semunit1
+        ex:attr1
+    }
+}
+
+# 3. Execute Personalized PageRank (PPR)
+INSERT {
+    GRAPH <http://example.org/graph/search> {
+        ?node nrag:hasPPRScore ?newScore .
+        ?query nrag:hasCrossNode ?node .
+    }
+}
+WHERE {
+    # Get the query
+    VALUES ?query { ex:query1 }
+    ?query a nrag:Query .
+    
+    # Get entry points
+    ?query nrag:hasEntryNode ?entryNode .
+    
+    # Count entry nodes for normalization
+    {
+        SELECT ?query (COUNT(?entryNode) AS ?entryNodeCount)
+        WHERE {
+            ?query nrag:hasEntryNode ?entryNode .
+        }
+        GROUP BY ?query
+    }
+    
+    # Simulate PPR for shallow (2-hop) proximity
+    # In a real system, this would implement the PPR algorithm
+    ?node a ?type .
+    
+    # Calculate score based on proximity to entry nodes
+    VALUES (?node ?rawScore) {
+        # Entry nodes have highest scores
+        (ex:entity1 "1.0"^^xsd:float)
+        (ex:entity2 "1.0"^^xsd:float)
+        (ex:semunit1 "1.0"^^xsd:float)
+        (ex:attr1 "1.0"^^xsd:float)
+        
+        # 1-hop neighbors
+        (ex:rel1 "0.85"^^xsd:float)
+        (ex:rel2 "0.82"^^xsd:float)
+        (ex:rel3 "0.79"^^xsd:float)
+        (ex:semunit2 "0.75"^^xsd:float)
+        
+        # 2-hop neighbors
+        (ex:entity5 "0.65"^^xsd:float)
+        (ex:entity6 "0.62"^^xsd:float)
+        (ex:hl1 "0.58"^^xsd:float)
+    }
+    
+    # Only include nodes with significant scores
+    FILTER(?rawScore > 0.5)
+    
+    # Normalize scores by teleport probability
+    BIND(?rawScore AS ?newScore)
+}
+
+# 4. Filter retrieval nodes
+SELECT ?node ?type ?content ?pprScore
+WHERE {
+    # Get query
+    VALUES ?query { ex:query1 }
+    ?query a nrag:Query .
+    
+    # Get entry nodes and cross nodes
+    {
+        ?query nrag:hasEntryNode ?node .
+    }
+    UNION
+    {
+        ?query nrag:hasCrossNode ?node .
+    }
+    
+    # Get node properties
+    ?node a ?type .
+    ?node nrag:hasContent ?content .
+    ?node nrag:hasPPRScore ?pprScore .
+    
+    # Filter for retrievable nodes only
+    FILTER(?type IN (nrag:Text, nrag:SemanticUnit, nrag:Attribute, nrag:HighLevelElement, nrag:Relationship))
+    
+    # Order by PPR score and limit results
+    ORDER BY DESC(?pprScore)
+    LIMIT 5
+}
+
+# 5. Update query with retrieval nodes
+INSERT {
+    GRAPH <http://example.org/graph/search> {
+        ?query nrag:hasRetrievalNode ?node .
+    }
+}
+WHERE {
+    VALUES ?query { ex:query1 }
+    ?query a nrag:Query .
+    
+    # Get retrieval nodes from filtered results
+    # In a real system, this would use the results from the previous query
+    VALUES ?node {
+        ex:semunit1
+        ex:attr1
+        ex:rel1
+        ex:semunit2
+        ex:hl1
+    }
+}

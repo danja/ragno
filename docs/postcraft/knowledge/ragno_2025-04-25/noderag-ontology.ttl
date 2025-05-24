@@ -1,0 +1,223 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix nrag: <http://example.org/noderag#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+# Ontology Definition
+nrag: a owl:Ontology ;
+    dcterms:title "NodeRAG Ontology"@en ;
+    dcterms:description "An ontology for the NodeRAG framework, a graph-based Retrieval-Augmented Generation system with heterogeneous nodes."@en ;
+    dcterms:creator "Based on work by Tianyang Xu et al."@en ;
+    owl:versionInfo "1.0" .
+
+# Node Type Hierarchy
+nrag:Node a owl:Class ;
+    rdfs:label "Node"@en ;
+    rdfs:comment "A node in the NodeRAG heterogeneous graph."@en .
+
+nrag:Entity a owl:Class ;
+    rdfs:subClassOf nrag:Node ;
+    rdfs:label "Entity"@en ;
+    rdfs:comment "A node representing a named entity (N)."@en .
+
+nrag:Relationship a owl:Class ;
+    rdfs:subClassOf nrag:Node ;
+    rdfs:label "Relationship"@en ;
+    rdfs:comment "A node representing a relationship between entities (R)."@en .
+
+nrag:SemanticUnit a owl:Class ;
+    rdfs:subClassOf nrag:Node ;
+    rdfs:label "Semantic Unit"@en ;
+    rdfs:comment "A node representing an independent event unit from text chunks (S)."@en .
+
+nrag:Attribute a owl:Class ;
+    rdfs:subClassOf nrag:Node ;
+    rdfs:label "Attribute"@en ;
+    rdfs:comment "A node representing properties of important entities (A)."@en .
+
+nrag:HighLevelElement a owl:Class ;
+    rdfs:subClassOf nrag:Node ;
+    rdfs:label "High-Level Element"@en ;
+    rdfs:comment "A node representing insights summarizing graph communities (H)."@en .
+
+nrag:HighLevelOverview a owl:Class ;
+    rdfs:subClassOf nrag:Node ;
+    rdfs:label "High-Level Overview"@en ;
+    rdfs:comment "A node representing titles or keywords summarizing high-level elements (O)."@en .
+
+nrag:Text a owl:Class ;
+    rdfs:subClassOf nrag:Node ;
+    rdfs:label "Text"@en ;
+    rdfs:comment "A node representing original text chunks (T)."@en .
+
+nrag:Community a owl:Class ;
+    rdfs:label "Community"@en ;
+    rdfs:comment "A community of nodes identified by clustering algorithms."@en .
+
+nrag:Embedding a owl:Class ;
+    rdfs:label "Embedding"@en ;
+    rdfs:comment "A vector embedding for a node."@en .
+
+# Node Properties
+nrag:hasContent a owl:DatatypeProperty ;
+    rdfs:domain nrag:Node ;
+    rdfs:range xsd:string ;
+    rdfs:label "has content"@en ;
+    rdfs:comment "The textual content of a node."@en .
+
+nrag:hasSourceDocument a owl:ObjectProperty ;
+    rdfs:domain nrag:Node ;
+    rdfs:range nrag:Document ;
+    rdfs:label "has source document"@en ;
+    rdfs:comment "Links a node to its source document."@en .
+
+nrag:isRetrievable a owl:DatatypeProperty ;
+    rdfs:domain nrag:Node ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "is retrievable"@en ;
+    rdfs:comment "Indicates whether a node can be directly retrieved."@en .
+
+nrag:isEntryPoint a owl:DatatypeProperty ;
+    rdfs:domain nrag:Node ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "is entry point"@en ;
+    rdfs:comment "Indicates whether a node can serve as an entry point for search."@en .
+
+# Edge Properties
+nrag:connectsTo a owl:ObjectProperty ;
+    rdfs:domain nrag:Node ;
+    rdfs:range nrag:Node ;
+    rdfs:label "connects to"@en ;
+    rdfs:comment "A general connection between nodes."@en .
+
+nrag:hasSourceEntity a owl:ObjectProperty ;
+    rdfs:subPropertyOf nrag:connectsTo ;
+    rdfs:domain nrag:Relationship ;
+    rdfs:range nrag:Entity ;
+    rdfs:label "has source entity"@en ;
+    rdfs:comment "Links a relationship to its source entity."@en .
+
+nrag:hasTargetEntity a owl:ObjectProperty ;
+    rdfs:subPropertyOf nrag:connectsTo ;
+    rdfs:domain nrag:Relationship ;
+    rdfs:range nrag:Entity ;
+    rdfs:label "has target entity"@en ;
+    rdfs:comment "Links a relationship to its target entity."@en .
+
+nrag:hasSemanticUnit a owl:ObjectProperty ;
+    rdfs:subPropertyOf nrag:connectsTo ;
+    rdfs:domain nrag:Entity ;
+    rdfs:range nrag:SemanticUnit ;
+    rdfs:label "has semantic unit"@en ;
+    rdfs:comment "Links an entity to a semantic unit."@en .
+
+nrag:hasAttribute a owl:ObjectProperty ;
+    rdfs:subPropertyOf nrag:connectsTo ;
+    rdfs:domain nrag:Entity ;
+    rdfs:range nrag:Attribute ;
+    rdfs:label "has attribute"@en ;
+    rdfs:comment "Links an entity to an attribute."@en .
+
+nrag:hasHighLevelElement a owl:ObjectProperty ;
+    rdfs:subPropertyOf nrag:connectsTo ;
+    rdfs:domain nrag:Community ;
+    rdfs:range nrag:HighLevelElement ;
+    rdfs:label "has high-level element"@en ;
+    rdfs:comment "Links a community to a high-level element."@en .
+
+nrag:hasHighLevelOverview a owl:ObjectProperty ;
+    rdfs:subPropertyOf nrag:connectsTo ;
+    rdfs:domain nrag:HighLevelElement ;
+    rdfs:range nrag:HighLevelOverview ;
+    rdfs:label "has high-level overview"@en ;
+    rdfs:comment "Links a high-level element to a high-level overview."@en .
+
+nrag:hasText a owl:ObjectProperty ;
+    rdfs:subPropertyOf nrag:connectsTo ;
+    rdfs:domain nrag:SemanticUnit ;
+    rdfs:range nrag:Text ;
+    rdfs:label "has text"@en ;
+    rdfs:comment "Links a semantic unit to its original text."@en .
+
+nrag:hasEmbedding a owl:ObjectProperty ;
+    rdfs:domain nrag:Node ;
+    rdfs:range nrag:Embedding ;
+    rdfs:label "has embedding"@en ;
+    rdfs:comment "Links a node to its vector embedding."@en .
+
+nrag:inCommunity a owl:ObjectProperty ;
+    rdfs:domain nrag:Node ;
+    rdfs:range nrag:Community ;
+    rdfs:label "in community"@en ;
+    rdfs:comment "Assigns a node to a community."@en .
+
+nrag:hasWeight a owl:DatatypeProperty ;
+    rdfs:domain owl:ObjectProperty ;
+    rdfs:range xsd:float ;
+    rdfs:label "has weight"@en ;
+    rdfs:comment "The weight of an edge in the graph."@en .
+
+# Graph Algorithm Properties
+nrag:hasPPRScore a owl:DatatypeProperty ;
+    rdfs:domain nrag:Node ;
+    rdfs:range xsd:float ;
+    rdfs:label "has PPR score"@en ;
+    rdfs:comment "The Personalized PageRank score of a node."@en .
+
+nrag:hasSimilarityScore a owl:DatatypeProperty ;
+    rdfs:domain nrag:Node ;
+    rdfs:range xsd:float ;
+    rdfs:label "has similarity score"@en ;
+    rdfs:comment "The similarity score of a node to a query."@en .
+
+# Document and Corpus
+nrag:Document a owl:Class ;
+    rdfs:label "Document"@en ;
+    rdfs:comment "A document in the corpus."@en .
+
+nrag:Corpus a owl:Class ;
+    rdfs:label "Corpus"@en ;
+    rdfs:comment "A collection of documents."@en .
+
+nrag:hasDocument a owl:ObjectProperty ;
+    rdfs:domain nrag:Corpus ;
+    rdfs:range nrag:Document ;
+    rdfs:label "has document"@en ;
+    rdfs:comment "Links a corpus to a document."@en .
+
+# Query and Search
+nrag:Query a owl:Class ;
+    rdfs:label "Query"@en ;
+    rdfs:comment "A query for information retrieval."@en .
+
+nrag:hasQueryText a owl:DatatypeProperty ;
+    rdfs:domain nrag:Query ;
+    rdfs:range xsd:string ;
+    rdfs:label "has query text"@en ;
+    rdfs:comment "The text of a query."@en .
+
+nrag:hasQueryEmbedding a owl:ObjectProperty ;
+    rdfs:domain nrag:Query ;
+    rdfs:range nrag:Embedding ;
+    rdfs:label "has query embedding"@en ;
+    rdfs:comment "Links a query to its vector embedding."@en .
+
+nrag:hasEntryNode a owl:ObjectProperty ;
+    rdfs:domain nrag:Query ;
+    rdfs:range nrag:Node ;
+    rdfs:label "has entry node"@en ;
+    rdfs:comment "Links a query to an entry node."@en .
+
+nrag:hasCrossNode a owl:ObjectProperty ;
+    rdfs:domain nrag:Query ;
+    rdfs:range nrag:Node ;
+    rdfs:label "has cross node"@en ;
+    rdfs:comment "Links a query to a cross node found through PPR."@en .
+
+nrag:hasRetrievalNode a owl:ObjectProperty ;
+    rdfs:domain nrag:Query ;
+    rdfs:range nrag:Node ;
+    rdfs:label "has retrieval node"@en ;
+    rdfs:comment "Links a query to a node in the final retrieval set."@en .

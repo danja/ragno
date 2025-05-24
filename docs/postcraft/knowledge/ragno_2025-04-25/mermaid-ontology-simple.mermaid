@@ -1,0 +1,34 @@
+classDiagram
+    class Node
+    class Entity
+    class Relationship
+    class SemanticUnit
+    class Attribute
+    class HighLevelElement
+    class HighLevelOverview
+    class Text
+    class Community
+    class Embedding
+    class Document
+    class Corpus
+    class Query
+    
+    Node <|-- Entity
+    Node <|-- Relationship
+    Node <|-- SemanticUnit
+    Node <|-- Attribute
+    Node <|-- HighLevelElement
+    Node <|-- HighLevelOverview
+    Node <|-- Text
+    
+    Entity --> SemanticUnit
+    Entity --> Attribute
+    Relationship --> Entity
+    SemanticUnit --> Text
+    HighLevelElement --> HighLevelOverview
+    Community --> HighLevelElement
+    Node --> Community
+    Node --> Embedding
+    Corpus --> Document
+    Query --> Node
+    Query --> Embedding

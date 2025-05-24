@@ -1,0 +1,62 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nrag: <http://example.org/noderag#>
+PREFIX ex: <http://example.org/instance#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# Create a new semantic unit with extracted entities
+INSERT {
+    GRAPH <http://example.org/graph/decomposition> {
+        # Create semantic unit
+        ?semunit a nrag:SemanticUnit ;
+            nrag:hasContent ?semunitContent ;
+            nrag:hasText ?text ;
+            nrag:hasSourceDocument ?doc ;
+            nrag:isRetrievable true ;
+            nrag:isEntryPoint true .
+        
+        # Create entities
+        ?entity1 a nrag:Entity ;
+            rdfs:label ?entity1Label ;
+            nrag:isRetrievable false ;
+            nrag:isEntryPoint true ;
+            nrag:hasSemanticUnit ?semunit .
+            
+        ?entity2 a nrag:Entity ;
+            rdfs:label ?entity2Label ;
+            nrag:isRetrievable false ;
+            nrag:isEntryPoint true ;
+            nrag:hasSemanticUnit ?semunit .
+            
+        # Create relationship
+        ?rel a nrag:Relationship ;
+            rdfs:label ?relLabel ;
+            nrag:hasContent ?relContent ;
+            nrag:hasSourceEntity ?entity1 ;
+            nrag:hasTargetEntity ?entity2 ;
+            nrag:isRetrievable true ;
+            nrag:isEntryPoint false .
+    }
+}
+WHERE {
+    # Get text from document
+    GRAPH <http://example.org/graph/corpus> {
+        ?text a nrag:Text ;
+            nrag:hasContent ?textContent ;
+            nrag:hasSourceDocument ?doc .
+    }
+    
+    # Use values to simulate LLM extraction
+    # In a real implementation, this would be replaced with a call to an LLM service
+    VALUES (?textId ?semunitContent ?entity1Label ?entity2Label ?relLabel ?relContent) {
+        (ex:text1 "Hinton was awarded the Nobel Prize for AI research" "Geoffrey Hinton" "Nobel Prize" "was awarded" "Geoffrey Hinton received the Nobel Prize for AI research")
+    }
+    
+    FILTER(?text = ?textId)
+    
+    # Generate new URIs
+    BIND(IRI(CONCAT(STR(ex:), "semunit_", STRUUID())) AS ?semunit)
+    BIND(IRI(CONCAT(STR(ex:), "entity_", ENCODE_FOR_URI(?entity1Label))) AS ?entity1)
+    BIND(IRI(CONCAT(STR(ex:), "entity_", ENCODE_FOR_URI(?entity2Label))) AS ?entity2)
+    BIND(IRI(CONCAT(STR(ex:), "rel_", STRUUID())) AS ?rel)
+}

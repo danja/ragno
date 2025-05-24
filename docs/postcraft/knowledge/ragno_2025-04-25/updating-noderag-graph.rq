@@ -1,0 +1,295 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nrag: <http://example.org/noderag#>
+PREFIX ex: <http://example.org/instance#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# 1. Add a new document to the corpus
+INSERT {
+    GRAPH <http://example.org/graph/corpus> {
+        # Create document
+        ?doc a nrag:Document ;
+            rdfs:label ?docLabel ;
+            nrag:hasContent ?docContent .
+            
+        # Add to corpus
+        ex:corpus1 nrag:hasDocument ?doc .
+        
+        # Create text chunks
+        ?text1 a nrag:Text ;
+            nrag:hasContent ?textContent1 ;
+            nrag:hasSourceDocument ?doc ;
+            nrag:isRetrievable true ;
+            nrag:isEntryPoint false .
+            
+        ?text2 a nrag:Text ;
+            nrag:hasContent ?textContent2 ;
+            nrag:hasSourceDocument ?doc ;
+            nrag:isRetrievable true ;
+            nrag:isEntryPoint false .
+    }
+}
+WHERE {
+    # Simulate new document data
+    BIND("New advances in AI ethics research" AS ?docLabel)
+    BIND("Recent developments in AI ethics research focus on ensuring that AI systems operate with transparency and fairness. Experts like Maya Patel have proposed new frameworks for bias detection. The increasing adoption of AI across industries raises important questions about privacy and accountability." AS ?docContent)
+    
+    # Simulate text chunking
+    BIND("Recent developments in AI ethics research focus on ensuring that AI systems operate with transparency and fairness." AS ?textContent1)
+    BIND("Experts like Maya Patel have proposed new frameworks for bias detection. The increasing adoption of AI across industries raises important questions about privacy and accountability." AS ?textContent2)
+    
+    # Generate new URIs
+    BIND(IRI(CONCAT(STR(ex:), "doc_", STRUUID())) AS ?doc)
+    BIND(IRI(CONCAT(STR(ex:), "text_", STRUUID())) AS ?text1)
+    BIND(IRI(CONCAT(STR(ex:), "text_", STRUUID())) AS ?text2)
+}
+
+# 2. Run graph decomposition on new text chunks
+INSERT {
+    GRAPH <http://example.org/graph/decomposition> {
+        # Create semantic units
+        ?semunit1 a nrag:SemanticUnit ;
+            nrag:hasContent ?semunitContent1 ;
+            nrag:hasText ?text1 ;
+            nrag:hasSourceDocument ?doc ;
+            nrag:isRetrievable true ;
+            nrag:isEntryPoint true .
+            
+        ?semunit2 a nrag:SemanticUnit ;
+            nrag:hasContent ?semunitContent2 ;
+            nrag:hasText ?text2 ;
+            nrag:hasSourceDocument ?doc ;
+            nrag:isRetrievable true ;
+            nrag:isEntryPoint true .
+        
+        # Create or reuse entities
+        ?entity1 a nrag:Entity ;
+            rdfs:label ?entity1Label ;
+            nrag:isRetrievable false ;
+            nrag:isEntryPoint true ;
+            nrag:hasSemanticUnit ?semunit1 .
+            
+        ?entity2 a nrag:Entity ;
+            rdfs:label ?entity2Label ;
+            nrag:isRetrievable false ;
+            nrag:isEntryPoint true ;
+            nrag:hasSemanticUnit ?semunit1 .
+            
+        ?entity3 a nrag:Entity ;
+            rdfs:label ?entity3Label ;
+            nrag:isRetrievable false ;
+            nrag:isEntryPoint true ;
+            nrag:hasSemanticUnit ?semunit2 .
+            
+        # Create relationships
+        ?rel1 a nrag:Relationship ;
+            rdfs:label ?rel1Label ;
+            nrag:hasContent ?rel1Content ;
+            nrag:hasSourceEntity ?entity1 ;
+            nrag:hasTargetEntity ?entity2 ;
+            nrag:isRetrievable true ;
+            nrag:isEntryPoint false .
+    }
+}
+WHERE {
+    # Get the newly added text chunks
+    GRAPH <http://example.org/graph/corpus> {
+        ?text1 a nrag:Text ;
+            nrag:hasContent ?textContent1 ;
+            nrag:hasSourceDocument ?doc .
+            
+        ?text2 a nrag:Text ;
+            nrag:hasContent ?textContent2 ;
+            nrag:hasSourceDocument ?doc .
+            
+        ?doc a nrag:Document ;
+            rdfs:label ?docLabel .
+    }
+    
+    # Simulate LLM extraction of semantic units, entities, and relationships
+    BIND("AI ethics research aims to ensure transparency and fairness in AI systems" AS ?semunitContent1)
+    BIND("Maya Patel has proposed frameworks for bias detection as AI adoption raises privacy questions" AS ?semunitContent2)
+    
+    BIND("AI ethics research" AS ?entity1Label)
+    BIND("AI systems" AS ?entity2Label)
+    BIND("Maya Patel" AS ?entity3Label)
+    
+    BIND("focuses on" AS ?rel1Label)
+    BIND("AI ethics research focuses on ensuring transparency and fairness in AI systems" AS ?rel1Content)
+    
+    # Check if entities already exist, otherwise create new URIs
+    OPTIONAL {
+        GRAPH <http://example.org/graph/decomposition> {
+            ?existingEntity1 a nrag:Entity ;
+                rdfs:label ?entity1Label .
+            
+            ?existingEntity2 a nrag:Entity ;
+                rdfs:label ?entity2Label .
+                
+            ?existingEntity3 a nrag:Entity ;
+                rdfs:label ?entity3Label .
+        }
+    }
+    
+    # Use existing entities or create new ones
+    BIND(COALESCE(?existingEntity1, IRI(CONCAT(STR(ex:), "entity_", ENCODE_FOR_URI(?entity1Label)))) AS ?entity1)
+    BIND(COALESCE(?existingEntity2, IRI(CONCAT(STR(ex:), "entity_", ENCODE_FOR_URI(?entity2Label)))) AS ?entity2)
+    BIND(COALESCE(?existingEntity3, IRI(CONCAT(STR(ex:), "entity_", ENCODE_FOR_URI(?entity3Label)))) AS ?entity3)
+    
+    # Generate new URIs for other nodes
+    BIND(IRI(CONCAT(STR(ex:), "semunit_", STRUUID())) AS ?semunit1)
+    BIND(IRI(CONCAT(STR(ex:), "semunit_", STRUUID())) AS ?semunit2)
+    BIND(IRI(CONCAT(STR(ex:), "rel_", STRUUID())) AS ?rel1)
+}
+
+# 3. Update community membership based on new content
+INSERT {
+    GRAPH <http://example.org/graph/augmentation> {
+        # Add nodes to existing community
+        ?node nrag:inCommunity ?community .
+    }
+}
+WHERE {
+    # Find relevant community based on content similarity
+    VALUES ?communityLabel { "AI Research Community" }
+    
+    GRAPH <http://example.org/graph/augmentation> {
+        ?community a nrag:Community ;
+            rdfs:label ?communityLabel .
+    }
+    
+    # Get nodes from new document that match the community theme
+    GRAPH <http://example.org/graph/decomposition> {
+        ?node a ?type .
+        ?node rdfs:label ?nodeLabel .
+        
+        # Only consider certain node types
+        FILTER(?type IN (nrag:Entity, nrag:SemanticUnit, nrag:Relationship))
+        
+        # Match by label or content to determine community membership
+        OPTIONAL { ?node nrag:hasContent ?content }
+        FILTER(
+            (BOUND(?nodeLabel) && CONTAINS(LCASE(?nodeLabel), "ai")) ||
+            (BOUND(?content) && CONTAINS(LCASE(?content), "ai"))
+        )
+        
+        # Only include nodes from the new document
+        ?node nrag:hasSourceDocument ?doc .
+        ?doc rdfs:label "New advances in AI ethics research" .
+    }
+}
+
+# 4. Update HNSW edges for new nodes
+INSERT {
+    GRAPH <http://example.org/graph/enrichment> {
+        # Add embeddings for new nodes
+        ?embedding a nrag:Embedding ;
+            nrag:hasContent ?embVector .
+            
+        ?node nrag:hasEmbedding ?embedding .
+        
+        # Add HNSW semantic edges
+        ?node1 nrag:connectsTo ?node2 .
+        
+        # Create a statement about the edge weight
+        _:edgeWeight rdf:subject ?node1 ;
+                     rdf:predicate nrag:connectsTo ;
+                     rdf:object ?node2 ;
+                     nrag:hasWeight ?weight .
+    }
+}
+WHERE {
+    # Get new nodes that should have embeddings
+    {
+        SELECT ?node ?content
+        WHERE {
+            # Get new semantic units with their content
+            GRAPH <http://example.org/graph/decomposition> {
+                ?node a ?type1 .
+                ?node nrag:hasContent ?content .
+                FILTER(?type1 IN (nrag:SemanticUnit, nrag:Text))
+                
+                # Only include nodes from the new document
+                ?node nrag:hasSourceDocument ?doc .
+                ?doc rdfs:label "New advances in AI ethics research" .
+            }
+        }
+    }
+    
+    # Simulate embedding generation
+    BIND(CONCAT("[", STR(RAND()), ", ", STR(RAND()), ", ", STR(RAND()), ", ", STR(RAND()), ", ", STR(RAND()), "]") AS ?embVector)
+    
+    # Generate new URI for embedding
+    BIND(IRI(CONCAT(STR(ex:), "emb_", STRUUID())) AS ?embedding)
+    
+    # Find similar nodes for HNSW edges
+    OPTIONAL {
+        # Get an existing node with similar content (simulated)
+        GRAPH <http://example.org/graph/decomposition> {
+            ?node1 a nrag:SemanticUnit .
+            ?node2 a nrag:SemanticUnit .
+            
+            # Ensure we're connecting a new node to an existing one
+            ?node1 nrag:hasSourceDocument ?doc .
+            ?doc rdfs:label "New advances in AI ethics research" .
+            
+            # Simulate content similarity
+            ?node1 nrag:hasContent ?content1 .
+            ?node2 nrag:hasContent ?content2 .
+            FILTER(CONTAINS(LCASE(?content1), "ai") && CONTAINS(LCASE(?content2), "ai"))
+            
+            # Avoid connecting to itself
+            FILTER(?node1 != ?node2)
+            
+            # Ensure node2 is not from the new document
+            FILTER NOT EXISTS {
+                ?node2 nrag:hasSourceDocument ?doc .
+                ?doc rdfs:label "New advances in AI ethics research" .
+            }
+            
+            # Simulate similarity score
+            BIND(0.75 + (RAND() * 0.2) AS ?weight)
+        }
+    }
+}
+
+# 5. Query to verify the update
+SELECT ?docLabel ?semunitCount ?entityCount ?communityCount
+WHERE {
+    # Get document info
+    ?doc rdfs:label ?docLabel .
+    FILTER(?docLabel = "New advances in AI ethics research")
+    
+    # Count semantic units
+    {
+        SELECT ?doc (COUNT(?semunit) AS ?semunitCount)
+        WHERE {
+            ?semunit a nrag:SemanticUnit ;
+                nrag:hasSourceDocument ?doc .
+        }
+        GROUP BY ?doc
+    }
+    
+    # Count connected entities
+    {
+        SELECT ?doc (COUNT(DISTINCT ?entity) AS ?entityCount)
+        WHERE {
+            ?semunit a nrag:SemanticUnit ;
+                nrag:hasSourceDocument ?doc .
+            ?entity a nrag:Entity ;
+                nrag:hasSemanticUnit ?semunit .
+        }
+        GROUP BY ?doc
+    }
+    
+    # Count communities the document is connected to
+    {
+        SELECT ?doc (COUNT(DISTINCT ?community) AS ?communityCount)
+        WHERE {
+            ?semunit a nrag:SemanticUnit ;
+                nrag:hasSourceDocument ?doc .
+            ?semunit nrag:inCommunity ?community .
+        }
+        GROUP BY ?doc
+    }
+}

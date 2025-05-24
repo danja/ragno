@@ -1,0 +1,74 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nrag: <http://example.org/noderag#>
+PREFIX ex: <http://example.org/instance#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# Add embeddings to nodes
+INSERT {
+    GRAPH <http://example.org/graph/enrichment> {
+        ?embedding a nrag:Embedding ;
+            nrag:hasContent ?embVector .
+            
+        ?node nrag:hasEmbedding ?embedding .
+    }
+}
+WHERE {
+    # Select nodes that should have embeddings
+    {
+        SELECT ?node ?content
+        WHERE {
+            # Get semantic units, attributes, high-level elements, and text
+            GRAPH <http://example.org/graph/decomposition> {
+                ?node a ?type1 .
+                ?node nrag:hasContent ?content .
+                FILTER(?type1 IN (nrag:SemanticUnit, nrag:Text))
+            }
+            UNION
+            GRAPH <http://example.org/graph/augmentation> {
+                ?node a ?type2 .
+                ?node nrag:hasContent ?content .
+                FILTER(?type2 IN (nrag:Attribute, nrag:HighLevelElement))
+            }
+        }
+    }
+    
+    # Simulate embedding generation
+    # In a real system, this would call an embedding service
+    BIND(CONCAT("[", STR(RAND()), ", ", STR(RAND()), ", ", STR(RAND()), ", ", STR(RAND()), ", ", STR(RAND()), "]") AS ?embVector)
+    
+    # Generate new URI for embedding
+    BIND(IRI(CONCAT(STR(ex:), "emb_", STRUUID())) AS ?embedding)
+}
+
+# Add HNSW semantic edges between similar nodes
+INSERT {
+    GRAPH <http://example.org/graph/enrichment> {
+        ?node1 nrag:connectsTo ?node2 .
+        
+        # Create a statement about the edge weight
+        _:edgeWeight rdf:subject ?node1 ;
+                     rdf:predicate nrag:connectsTo ;
+                     rdf:object ?node2 ;
+                     nrag:hasWeight ?weight .
+    }
+}
+WHERE {
+    # Get nodes with embeddings
+    GRAPH <http://example.org/graph/enrichment> {
+        ?node1 nrag:hasEmbedding ?emb1 .
+        ?node2 nrag:hasEmbedding ?emb2 .
+        
+        # Avoid self-connections
+        FILTER(?node1 != ?node2)
+        
+        # Simulate HNSW nearest neighbor search
+        # In a real system, this would use vector similarity computation
+        # Here we're using predefined pairs
+        VALUES (?node1 ?node2 ?weight) {
+            (ex:semunit1 ex:attr1 "0.85"^^xsd:float)
+            (ex:semunit1 ex:semunit2 "0.72"^^xsd:float)
+            (ex:attr1 ex:hl1 "0.65"^^xsd:float)
+        }
+    }
+}

@@ -1,0 +1,156 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nrag: <http://example.org/noderag#>
+PREFIX ex: <http://example.org/instance#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# Construct a complete subgraph of a retrieval result
+CONSTRUCT {
+    # Query information
+    ?query a nrag:Query ;
+        nrag:hasQueryText ?queryText ;
+        nrag:hasEntryNode ?entryNode ;
+        nrag:hasCrossNode ?crossNode ;
+        nrag:hasRetrievalNode ?retrievalNode .
+    
+    # Entry nodes with their properties
+    ?entryNode a ?entryNodeType ;
+        rdfs:label ?entryNodeLabel ;
+        nrag:hasContent ?entryNodeContent ;
+        nrag:hasPPRScore ?entryNodePPRScore .
+    
+    # Cross nodes with their properties
+    ?crossNode a ?crossNodeType ;
+        rdfs:label ?crossNodeLabel ;
+        nrag:hasContent ?crossNodeContent ;
+        nrag:hasPPRScore ?crossNodePPRScore .
+    
+    # Retrieval nodes with their properties
+    ?retrievalNode a ?retrievalNodeType ;
+        rdfs:label ?retrievalNodeLabel ;
+        nrag:hasContent ?retrievalNodeContent ;
+        nrag:hasPPRScore ?retrievalNodePPRScore .
+    
+    # Entity connections
+    ?entity nrag:hasSemanticUnit ?semanticUnit ;
+        nrag:hasAttribute ?attribute .
+    
+    # Relationship connections
+    ?relationship nrag:hasSourceEntity ?sourceEntity ;
+        nrag:hasTargetEntity ?targetEntity .
+    
+    # High-level element connections
+    ?hlElement nrag:hasHighLevelOverview ?hlOverview .
+    
+    # Community connections
+    ?community nrag:hasHighLevelElement ?hlElement .
+    ?node nrag:inCommunity ?community .
+}
+WHERE {
+    # Get the query
+    VALUES ?query { ex:query1 }
+    ?query a nrag:Query .
+    OPTIONAL { ?query nrag:hasQueryText ?queryText }
+    
+    # Get the entry nodes
+    OPTIONAL {
+        ?query nrag:hasEntryNode ?entryNode .
+        ?entryNode a ?entryNodeType .
+        OPTIONAL { ?entryNode rdfs:label ?entryNodeLabel }
+        OPTIONAL { ?entryNode nrag:hasContent ?entryNodeContent }
+        OPTIONAL { ?entryNode nrag:hasPPRScore ?entryNodePPRScore }
+    }
+    
+    # Get the cross nodes
+    OPTIONAL {
+        ?query nrag:hasCrossNode ?crossNode .
+        ?crossNode a ?crossNodeType .
+        OPTIONAL { ?crossNode rdfs:label ?crossNodeLabel }
+        OPTIONAL { ?crossNode nrag:hasContent ?crossNodeContent }
+        OPTIONAL { ?crossNode nrag:hasPPRScore ?crossNodePPRScore }
+    }
+    
+    # Get the retrieval nodes
+    OPTIONAL {
+        ?query nrag:hasRetrievalNode ?retrievalNode .
+        ?retrievalNode a ?retrievalNodeType .
+        OPTIONAL { ?retrievalNode rdfs:label ?retrievalNodeLabel }
+        OPTIONAL { ?retrievalNode nrag:hasContent ?retrievalNodeContent }
+        OPTIONAL { ?retrievalNode nrag:hasPPRScore ?retrievalNodePPRScore }
+    }
+    
+    # Get entity connections (within 1-2 hops of retrieval nodes)
+    OPTIONAL {
+        ?entity a nrag:Entity .
+        OPTIONAL { ?entity nrag:hasSemanticUnit ?semanticUnit 
+                   FILTER(?semanticUnit IN (?entryNode, ?crossNode, ?retrievalNode)) }
+        OPTIONAL { ?entity nrag:hasAttribute ?attribute 
+                   FILTER(?attribute IN (?entryNode, ?crossNode, ?retrievalNode)) }
+    }
+    
+    # Get relationship connections (within 1-2 hops of retrieval nodes)
+    OPTIONAL {
+        ?relationship a nrag:Relationship .
+        OPTIONAL { ?relationship nrag:hasSourceEntity ?sourceEntity .
+                   FILTER(?relationship IN (?entryNode, ?crossNode, ?retrievalNode) ||
+                          ?sourceEntity IN (?entryNode, ?crossNode, ?retrievalNode)) }
+        OPTIONAL { ?relationship nrag:hasTargetEntity ?targetEntity .
+                   FILTER(?relationship IN (?entryNode, ?crossNode, ?retrievalNode) ||
+                          ?targetEntity IN (?entryNode, ?crossNode, ?retrievalNode)) }
+    }
+    
+    # Get high-level element connections (within 1-2 hops of retrieval nodes)
+    OPTIONAL {
+        ?hlElement a nrag:HighLevelElement .
+        OPTIONAL { ?hlElement nrag:hasHighLevelOverview ?hlOverview .
+                   FILTER(?hlElement IN (?entryNode, ?crossNode, ?retrievalNode)) }
+    }
+    
+    # Get community connections (within 1-2 hops of retrieval nodes)
+    OPTIONAL {
+        ?community a nrag:Community .
+        OPTIONAL { ?community nrag:hasHighLevelElement ?hlElement .
+                   FILTER(?hlElement IN (?entryNode, ?crossNode, ?retrievalNode)) }
+        OPTIONAL { ?node nrag:inCommunity ?community .
+                   FILTER(?node IN (?entryNode, ?crossNode, ?retrievalNode)) }
+    }
+}
+
+# Alternative CONSTRUCT query to get a specific retrieval result with ranked nodes 
+CONSTRUCT {
+    ?query nrag:hasRetrievedText ?content .
+    ?query nrag:hasResultRank ?rankData .
+    ?rankData a nrag:RankData ;
+        nrag:hasRank ?rank ;
+        nrag:hasScore ?score ;
+        nrag:hasNodeType ?nodeType ;
+        nrag:hasContent ?content .
+}
+WHERE {
+    # Get the query
+    VALUES ?query { ex:query1 }
+    ?query a nrag:Query .
+    
+    # Get retrieval nodes ordered by PPR score
+    {
+        SELECT ?query ?retrievalNode ?nodeType ?content ?score ?nodeType (COUNT(?better) AS ?rank)
+        WHERE {
+            ?query nrag:hasRetrievalNode ?retrievalNode .
+            ?retrievalNode a ?nodeType .
+            ?retrievalNode nrag:hasContent ?content .
+            ?retrievalNode nrag:hasPPRScore ?score .
+            
+            # Count nodes with better scores for ranking
+            OPTIONAL {
+                ?query nrag:hasRetrievalNode ?better .
+                ?better nrag:hasPPRScore ?betterScore .
+                FILTER(?betterScore > ?score)
+            }
+        }
+        GROUP BY ?query ?retrievalNode ?nodeType ?content ?score ?nodeType
+        ORDER BY ?rank
+    }
+    
+    # Create a blank node for the rank data
+    BIND(BNODE() AS ?rankData)
+}
