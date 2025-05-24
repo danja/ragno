@@ -1,0 +1,32 @@
+flowchart TD
+    subgraph "1. Document Processing"
+        DOCS[Documents] --> |chunking| TEXT[Text Chunks]
+        TEXT --> |store| G_CORP[Corpus Graph]
+    end
+    
+    subgraph "2. Decomposition"
+        TEXT --> |LLM extraction| ENT[Entities]
+        TEXT --> |LLM extraction| REL[Relationships]  
+        TEXT --> |LLM extraction| UNIT[Units]
+        ENT & REL & UNIT --> |store| G_DEC[Decomposition Graph]
+    end
+    
+    subgraph "3. Augmentation"
+        G_DEC --> |centrality analysis| ATTR[Attributes]
+        G_DEC --> |community detection| COMM[Communities]
+        COMM --> |LLM summarization| CE[Community Elements]
+        CE --> |LLM extraction| CORE[Core Elements]
+        ATTR & COMM & CE & CORE --> |store| G_AUG[Augmentation Graph]
+    end
+    
+    subgraph "4. Enrichment"
+        G_DEC & G_AUG --> |vectorization| EMB[Embeddings]
+        EMB --> |HNSW algorithm| EDGES[Semantic Edges]
+        TEXT --> |reference| TEXTEL[Text Elements]
+        EMB & EDGES & TEXTEL --> |store| G_ENR[Enrichment Graph]
+    end
+    
+    style G_CORP fill:#bbf,stroke:#333,stroke-width:2px
+    style G_DEC fill:#bfb,stroke:#333,stroke-width:2px
+    style G_AUG fill:#fbf,stroke:#333,stroke-width:2px
+    style G_ENR fill:#ffb,stroke:#333,stroke-width:2px

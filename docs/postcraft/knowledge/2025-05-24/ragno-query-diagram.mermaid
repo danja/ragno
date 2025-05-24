@@ -1,0 +1,34 @@
+flowchart TD
+    subgraph "Query Input"
+        USER[User Query] --> QUERY[Query Instance]
+        QUERY --> |LLM extraction| ENTITIES[Query Entities]
+        QUERY --> |vectorization| QEMB[Query Embedding]
+    end
+    
+    subgraph "Dual Search"
+        ENTITIES --> |exact match| EXACT[Entity & Core<br/>Element Matches]
+        QEMB --> |similarity search| SIMILAR[Similar Elements<br/>Units, Attributes,<br/>Community Elements]
+        EXACT & SIMILAR --> |union| ENTRY[Entry Nodes]
+    end
+    
+    subgraph "Personalized PageRank"
+        ENTRY --> |2 iterations| PPR[PPR Algorithm]
+        PPR --> |traverse graph| CROSS[Cross Nodes]
+        PPR --> |calculate| SCORES[PPR Scores]
+    end
+    
+    subgraph "Retrieval"
+        ENTRY & CROSS --> |filter retrievable| FILTER[Filter Nodes]
+        FILTER & SCORES --> |rank by score| RANKED[Ranked Results]
+        RANKED --> |top-k| RETR[Retrieval Nodes]
+    end
+    
+    subgraph "Answer Generation"
+        RETR --> |construct subgraph| CONTEXT[Result Context]
+        CONTEXT --> |LLM generation| ANSWER[Generated Answer]
+    end
+    
+    style QUERY fill:#bff,stroke:#333,stroke-width:2px
+    style ENTRY fill:#9f9,stroke:#333,stroke-width:2px
+    style RETR fill:#f99,stroke:#333,stroke-width:2px
+    style ANSWER fill:#ff9,stroke:#333,stroke-width:2px

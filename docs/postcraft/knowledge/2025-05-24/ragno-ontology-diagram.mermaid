@@ -1,0 +1,67 @@
+classDiagram
+    class Element {
+        +content: string
+        +isRetrievable: boolean
+        +isEntryPoint: boolean
+        +hasPPRScore: float
+        +hasSimilarityScore: float
+    }
+    
+    class Entity {
+        +label: string
+    }
+    
+    class Relationship {
+        +label: string
+    }
+    
+    class Unit
+    
+    class Attribute
+    
+    class CommunityElement
+    
+    class CoreElement {
+        +label: string
+    }
+    
+    class TextElement
+    
+    class Community {
+        +label: string
+    }
+    
+    class Embedding {
+        +hasVector: string
+    }
+    
+    class Document
+    
+    class Corpus
+    
+    class Query {
+        +hasQueryText: string
+    }
+    
+    Element <|-- Entity
+    Element <|-- Relationship
+    Element <|-- Unit
+    Element <|-- Attribute
+    Element <|-- CommunityElement
+    Element <|-- CoreElement
+    Element <|-- TextElement
+    
+    Entity --> Unit : hasUnit
+    Entity --> Attribute : hasAttribute
+    Relationship --> Entity : hasSourceEntity
+    Relationship --> Entity : hasTargetEntity
+    Unit --> TextElement : hasTextElement
+    CommunityElement --> CoreElement : hasCoreElement
+    Community --> CommunityElement : hasCommunityElement
+    Element --> Community : inCommunity
+    Element --> Embedding : hasEmbedding
+    Corpus --> Document : hasDocument
+    Query --> Element : hasEntryNode
+    Query --> Element : hasCrossNode
+    Query --> Element : hasRetrievalNode
+    Query --> Embedding : hasQueryEmbedding

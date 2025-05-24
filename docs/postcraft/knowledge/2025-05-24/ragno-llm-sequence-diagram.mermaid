@@ -1,0 +1,51 @@
+sequenceDiagram
+    participant User
+    participant System as Ragno System
+    participant SPARQL as SPARQL Engine
+    participant LLM as LLM Service
+    participant VStore as Vector Store
+    
+    Note over User,VStore: 1. Decomposition Phase
+    
+    System->>SPARQL: Get text chunk from Corpus Graph
+    SPARQL-->>System: Return text content
+    System->>LLM: Extract entities, relationships, units from text
+    Note right of LLM: Prompt includes:<br/>- Text chunk<br/>- Extraction instructions<br/>- Output format
+    LLM-->>System: JSON with entities, relationships, semantic units
+    System->>SPARQL: Store in Decomposition Graph
+    
+    Note over User,VStore: 2. Augmentation Phase
+    
+    System->>SPARQL: Get important entity with connected units
+    SPARQL-->>System: Entity context (units, relationships)
+    System->>LLM: Generate attribute summary
+    Note right of LLM: Prompt includes:<br/>- Entity name<br/>- Related content<br/>- Summary instructions
+    LLM-->>System: Attribute text
+    System->>SPARQL: Store attribute in Augmentation Graph
+    
+    System->>SPARQL: Get community members
+    SPARQL-->>System: Community nodes and content
+    System->>LLM: Extract community insights
+    LLM-->>System: Community element text
+    System->>LLM: Generate core element title
+    LLM-->>System: Core element label
+    System->>SPARQL: Store community/core elements
+    
+    Note over User,VStore: 3. Query Processing Phase
+    
+    User->>System: Submit query
+    System->>LLM: Extract entities from query
+    Note right of LLM: Prompt includes:<br/>- Query text<br/>- Entity types<br/>- Domain context
+    LLM-->>System: Query entities list
+    System->>VStore: Get query embedding
+    VStore-->>System: Query vector
+    System->>SPARQL: Execute dual search
+    
+    Note over User,VStore: 4. Answer Generation Phase
+    
+    System->>SPARQL: Construct retrieval subgraph
+    SPARQL-->>System: Context graph (nodes, relationships)
+    System->>LLM: Generate answer from context
+    Note right of LLM: Prompt includes:<br/>- Original query<br/>- Retrieved content<br/>- Answer format
+    LLM-->>System: Generated answer
+    System-->>User: Return answer

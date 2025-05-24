@@ -1,0 +1,78 @@
+flowchart TD
+    subgraph "Ragno RDF Implementation"
+        subgraph "Named Graphs"
+            G_ONT[Ontology Graph]
+            G_CORP[Corpus Graph]
+            G_DEC[Decomposition Graph]
+            G_AUG[Augmentation Graph]
+            G_ENR[Enrichment Graph]
+            G_SEARCH[Search Graph]
+        end
+
+        subgraph "Raw Data"
+            DOCS[Documents] --> TEXT[Text Chunks]
+        end
+
+        subgraph "Decomposition"
+            ENT[Entities]
+            REL[Relationships]
+            UNIT[Units<br/><i>Semantic Units</i>]
+        end
+        
+        subgraph "Augmentation"
+            ATTR[Attributes]
+            COMM[Communities]
+            CE[Community Elements<br/><i>High-Level Elements</i>]
+            CORE[Core Elements<br/><i>High-Level Overviews</i>]
+        end
+        
+        subgraph "Enrichment"
+            EMB[Embeddings]
+            HNSW[HNSW Semantic Edges]
+            TEXTEL[Text Elements]
+        end
+        
+        subgraph "Query Processing"
+            QUERY[Query]
+            ENTRY[Entry Nodes]
+            CROSS[Cross Nodes]
+            RETR[Retrieval Nodes]
+        end
+        
+        %% Main Flow
+        DOCS --> |ragno:hasDocument| G_CORP
+        TEXT --> |ragno:hasSourceDocument| G_CORP
+        
+        G_CORP --> |LLM Decomposition| G_DEC
+        G_DEC --> |Centrality & Community Detection| G_AUG
+        G_AUG --> |Vector Embeddings & HNSW| G_ENR
+        
+        G_DEC -.-> |Populates| ENT & REL & UNIT
+        G_AUG -.-> |Populates| ATTR & COMM & CE & CORE
+        G_ENR -.-> |Populates| EMB & HNSW & TEXTEL
+        
+        ENT & REL & UNIT & ATTR & CE & CORE & EMB & HNSW --> |Support| QUERY
+        
+        QUERY --> |Dual Search| ENTRY
+        ENTRY --> |Shallow PPR| CROSS
+        ENTRY & CROSS --> |Filter| RETR
+        
+        RETR --> |LLM Answer Generation| ANSWER[Answer]
+    end
+    
+    subgraph "External Components"
+        SPARQL[SPARQL Engine]
+        VSTORE[Vector Store]
+        LLMS[LLM Services]
+    end
+    
+    G_ONT & G_CORP & G_DEC & G_AUG & G_ENR & G_SEARCH <--> SPARQL
+    EMB <--> VSTORE
+    DOCS & QUERY & RETR <--> LLMS
+
+    style G_ONT fill:#f9f,stroke:#333,stroke-width:2px
+    style G_CORP fill:#bbf,stroke:#333,stroke-width:2px
+    style G_DEC fill:#bfb,stroke:#333,stroke-width:2px
+    style G_AUG fill:#fbf,stroke:#333,stroke-width:2px
+    style G_ENR fill:#ffb,stroke:#333,stroke-width:2px
+    style G_SEARCH fill:#bff,stroke:#333,stroke-width:2px

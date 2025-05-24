@@ -1,0 +1,112 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX ragno: <http://purl.org/stuff/ragno/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX ex: <http://example.org/instance#>
+
+# 1. Find all retrievable elements for a specific entity
+SELECT ?element ?type ?content
+WHERE {
+    ex:entity1 ragno:hasUnit|ragno:hasAttribute ?element .
+    ?element a ?type ;
+        ragno:content ?content ;
+        ragno:isRetrievable true .
+}
+
+# 2. Get community structure with core elements
+SELECT ?community ?communityLabel ?ce ?core ?coreLabel
+WHERE {
+    ?community a ragno:Community ;
+        rdfs:label ?communityLabel ;
+        ragno:hasCommunityElement ?ce .
+    ?ce ragno:hasCoreElement ?core .
+    ?core rdfs:label ?coreLabel .
+}
+
+# 3. Dual search implementation - find entry points
+SELECT DISTINCT ?element ?type ?label ?score
+WHERE {
+    VALUES ?queryText { "Nobel Prize AI" }
+    
+    {
+        # Exact match on entities and core elements
+        ?element a ?type ;
+            rdfs:label ?label .
+        FILTER(?type IN (ragno:Entity, ragno:CoreElement))
+        FILTER(CONTAINS(LCASE(?label), "nobel") || CONTAINS(LCASE(?label), "ai"))
+        BIND(1.0 AS ?score)
+    }
+    UNION
+    {
+        # Similarity search on retrievable elements
+        ?element a ?type ;
+            ragno:hasEmbedding ?emb ;
+            ragno:isEntryPoint true .
+        OPTIONAL { ?element rdfs:label ?label }
+        # Simulated similarity score
+        ?element ragno:hasSimilarityScore ?score .
+        FILTER(?score > 0.7)
+    }
+}
+ORDER BY DESC(?score)
+
+# 4. Update element with new embedding
+INSERT {
+    ?element ragno:hasEmbedding ?newEmb .
+    ?newEmb a ragno:Embedding ;
+        ragno:hasVector ?vector .
+}
+WHERE {
+    VALUES (?element ?vector) {
+        (ex:ce1 "[0.3, 0.4, 0.5, 0.6, 0.7]")
+    }
+    BIND(IRI(CONCAT(STR(ex:), "emb_", STRUUID())) AS ?newEmb)
+}
+
+# 5. Construct retrieval subgraph for answer generation
+CONSTRUCT {
+    ?element a ?type ;
+        ragno:content ?content ;
+        skos:prefLabel ?label ;
+        ragno:hasPPRScore ?score .
+    
+    ?unit ragno:hasTextElement ?text .
+    ?text ragno:content ?textContent .
+    
+    ?ce ragno:hasCoreElement ?core .
+    ?core rdfs:label ?coreLabel .
+}
+WHERE {
+    ex:query1 ragno:hasRetrievalNode ?element .
+    ?element a ?type ;
+        ragno:content ?content ;
+        ragno:hasPPRScore ?score .
+    
+    OPTIONAL { ?element skos:prefLabel ?label }
+    
+    OPTIONAL {
+        ?element a ragno:Unit .
+        ?element ragno:hasTextElement ?text .
+        ?text ragno:content ?textContent .
+    }
+    
+    OPTIONAL {
+        ?element a ragno:CommunityElement .
+        ?element ragno:hasCoreElement ?core .
+        ?core rdfs:label ?coreLabel .
+    }
+}
+
+# 6. Add provenance tracking for new document
+INSERT DATA {
+    GRAPH <http://example.org/graph/corpus> {
+        ex:doc2 a ragno:Document ;
+            rdfs:label "New AI Ethics Paper" ;
+            ragno:content "AI ethics research focuses on fairness and transparency..." ;
+            prov:generatedAtTime "2024-01-20T09:00:00Z"^^xsd:dateTime ;
+            prov:wasAttributedTo ex:researcher1 .
+            
+        ex:corpus1 ragno:hasDocument ex:doc2 .
+    }
+}

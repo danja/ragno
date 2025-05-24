@@ -1,0 +1,41 @@
+flowchart TB
+    subgraph "Named Graphs"
+        G_ONT[Ontology Graph<br/>Schema Definitions]
+        G_CORP[Corpus Graph<br/>Documents & Text]
+        G_DEC[Decomposition Graph<br/>Entities, Relations, Units]
+        G_AUG[Augmentation Graph<br/>Attributes, Communities]
+        G_ENR[Enrichment Graph<br/>Embeddings, Edges]
+        G_SEARCH[Search Graph<br/>Queries, Results]
+    end
+    
+    subgraph "External Services"
+        SPARQL[SPARQL Engine]
+        VSTORE[Vector Store]
+        LLM[LLM Services]
+    end
+    
+    subgraph "Core Operations"
+        BUILD[Graph Construction]
+        QUERY[Query Processing]
+        RETRIEVE[Answer Generation]
+    end
+    
+    G_ONT -.->|defines schema| G_CORP & G_DEC & G_AUG & G_ENR & G_SEARCH
+    
+    G_CORP -->|feeds| BUILD
+    BUILD -->|populates| G_DEC & G_AUG & G_ENR
+    
+    G_DEC & G_AUG & G_ENR -->|support| QUERY
+    QUERY -->|creates| G_SEARCH
+    G_SEARCH -->|enables| RETRIEVE
+    
+    SPARQL <-->|queries| G_ONT & G_CORP & G_DEC & G_AUG & G_ENR & G_SEARCH
+    VSTORE <-->|similarity| G_ENR & QUERY
+    LLM <-->|processes| BUILD & QUERY & RETRIEVE
+    
+    style G_ONT fill:#f9f,stroke:#333,stroke-width:2px
+    style G_CORP fill:#bbf,stroke:#333,stroke-width:2px
+    style G_DEC fill:#bfb,stroke:#333,stroke-width:2px
+    style G_AUG fill:#fbf,stroke:#333,stroke-width:2px
+    style G_ENR fill:#ffb,stroke:#333,stroke-width:2px
+    style G_SEARCH fill:#bff,stroke:#333,stroke-width:2px
