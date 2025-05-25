@@ -1,0 +1,262 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ragno: <http://purl.org/stuff/ragno/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+# Ontology Definition
+ragno: a owl:Ontology ;
+    dcterms:title "Ragno Ontology"@en ;
+    dcterms:description "An ontology for graph-based Retrieval-Augmented Generation with heterogeneous nodes, based on NodeRAG."@en ;
+    dcterms:creator "Based on NodeRAG by Tianyang Xu et al."@en ;
+    owl:versionInfo "2.0" ;
+    owl:imports <http://www.w3.org/2004/02/skos/core> ,
+                <http://www.w3.org/ns/prov-o#> .
+
+# Core Classes
+
+## Base Element Class
+ragno:Element a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Element"@en ;
+    rdfs:comment "Base class for all elements in the Ragno knowledge graph."@en ;
+    skos:definition "An abstract element that can be part of the knowledge graph structure."@en .
+
+## Node Type Classes
+ragno:Entity a owl:Class ;
+    rdfs:subClassOf ragno:Element ;
+    rdfs:label "Entity"@en ;
+    rdfs:comment "A named entity extracted from text (N)."@en ;
+    skos:definition "A node representing a named entity that serves as an entry point for search."@en .
+
+ragno:Relationship a owl:Class ;
+    rdfs:subClassOf ragno:Element ;
+    rdfs:label "Relationship"@en ;
+    rdfs:comment "A relationship between entities, represented as a node (R)."@en ;
+    skos:definition "A node representing a relationship between entities."@en .
+
+ragno:Unit a owl:Class ;
+    rdfs:subClassOf ragno:Element ;
+    rdfs:label "Unit"@en ;
+    rdfs:comment "A semantic unit representing an independent event from text (S)."@en ;
+    skos:definition "A node representing an independent event unit summarized from text chunks."@en .
+
+ragno:Attribute a owl:Class ;
+    rdfs:subClassOf ragno:Element ;
+    rdfs:label "Attribute"@en ;
+    rdfs:comment "Properties of important entities (A)."@en ;
+    skos:definition "A node representing properties of important entities derived from their connected units and relationships."@en .
+
+ragno:CommunityElement a owl:Class ;
+    rdfs:subClassOf ragno:Element ;
+    rdfs:label "Community Element"@en ;
+    rdfs:comment "Insights summarizing graph communities (H)."@en ;
+    skos:definition "A node representing insights that summarize graph communities."@en .
+
+ragno:CoreElement a owl:Class ;
+    rdfs:subClassOf ragno:Element ;
+    rdfs:label "Core Element"@en ;
+    rdfs:comment "Core concepts summarizing community elements (O)."@en ;
+    skos:definition "A node representing titles or keywords that summarize community elements."@en .
+
+ragno:TextElement a owl:Class ;
+    rdfs:subClassOf ragno:Element ;
+    rdfs:label "Text Element"@en ;
+    rdfs:comment "Original text chunks (T)."@en ;
+    skos:definition "A node representing original text chunks from source documents."@en .
+
+## Supporting Classes
+ragno:Community a owl:Class ;
+    rdfs:subClassOf skos:Collection ;
+    rdfs:label "Community"@en ;
+    rdfs:comment "A collection of related elements identified by clustering."@en .
+
+ragno:Embedding a owl:Class ;
+    rdfs:label "Embedding"@en ;
+    rdfs:comment "A vector embedding for an element."@en .
+
+ragno:Document a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "Document"@en ;
+    rdfs:comment "A source document in the corpus."@en .
+
+ragno:Corpus a owl:Class ;
+    rdfs:subClassOf prov:Collection ;
+    rdfs:label "Corpus"@en ;
+    rdfs:comment "A collection of documents."@en .
+
+ragno:Query a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "Query"@en ;
+    rdfs:comment "A query for information retrieval."@en .
+
+# Properties
+
+## Content Properties
+ragno:content a owl:DatatypeProperty ;
+    rdfs:domain ragno:Element ;
+    rdfs:range xsd:string ;
+    rdfs:label "content"@en ;
+    rdfs:comment "The textual content of an element."@en .
+
+ragno:hasSourceDocument a owl:ObjectProperty ;
+    rdfs:domain ragno:Element ;
+    rdfs:range ragno:Document ;
+    rdfs:subPropertyOf prov:wasDerivedFrom ;
+    rdfs:label "has source document"@en ;
+    rdfs:comment "Links an element to its source document."@en .
+
+## Retrieval Properties
+ragno:isRetrievable a owl:DatatypeProperty ;
+    rdfs:domain ragno:Element ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "is retrievable"@en ;
+    rdfs:comment "Indicates whether an element can be directly retrieved."@en .
+
+ragno:isEntryPoint a owl:DatatypeProperty ;
+    rdfs:domain ragno:Element ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "is entry point"@en ;
+    rdfs:comment "Indicates whether an element can serve as an entry point for search."@en .
+
+## Relationship Properties
+ragno:hasSourceEntity a owl:ObjectProperty ;
+    rdfs:domain ragno:Relationship ;
+    rdfs:range ragno:Entity ;
+    rdfs:subPropertyOf skos:semanticRelation ;
+    rdfs:label "has source entity"@en ;
+    rdfs:comment "Links a relationship to its source entity."@en .
+
+ragno:hasTargetEntity a owl:ObjectProperty ;
+    rdfs:domain ragno:Relationship ;
+    rdfs:range ragno:Entity ;
+    rdfs:subPropertyOf skos:semanticRelation ;
+    rdfs:label "has target entity"@en ;
+    rdfs:comment "Links a relationship to its target entity."@en .
+
+ragno:hasUnit a owl:ObjectProperty ;
+    rdfs:domain ragno:Entity ;
+    rdfs:range ragno:Unit ;
+    rdfs:subPropertyOf skos:related ;
+    rdfs:label "has unit"@en ;
+    rdfs:comment "Links an entity to a semantic unit."@en .
+
+ragno:hasAttribute a owl:ObjectProperty ;
+    rdfs:domain ragno:Entity ;
+    rdfs:range ragno:Attribute ;
+    rdfs:subPropertyOf skos:related ;
+    rdfs:label "has attribute"@en ;
+    rdfs:comment "Links an entity to an attribute."@en .
+
+ragno:hasCommunityElement a owl:ObjectProperty ;
+    rdfs:domain ragno:Community ;
+    rdfs:range ragno:CommunityElement ;
+    rdfs:subPropertyOf skos:member ;
+    rdfs:label "has community element"@en ;
+    rdfs:comment "Links a community to a community element."@en .
+
+ragno:hasCoreElement a owl:ObjectProperty ;
+    rdfs:domain ragno:CommunityElement ;
+    rdfs:range ragno:CoreElement ;
+    rdfs:subPropertyOf skos:hasTopConcept ;
+    rdfs:label "has core element"@en ;
+    rdfs:comment "Links a community element to a core element."@en .
+
+ragno:hasTextElement a owl:ObjectProperty ;
+    rdfs:domain ragno:Unit ;
+    rdfs:range ragno:TextElement ;
+    rdfs:subPropertyOf prov:used ;
+    rdfs:label "has text element"@en ;
+    rdfs:comment "Links a semantic unit to its original text."@en .
+
+## Graph Structure Properties
+ragno:hasEmbedding a owl:ObjectProperty ;
+    rdfs:domain ragno:Element ;
+    rdfs:range ragno:Embedding ;
+    rdfs:label "has embedding"@en ;
+    rdfs:comment "Links an element to its vector embedding."@en .
+
+ragno:inCommunity a owl:ObjectProperty ;
+    rdfs:domain ragno:Element ;
+    rdfs:range ragno:Community ;
+    rdfs:subPropertyOf skos:inScheme ;
+    rdfs:label "in community"@en ;
+    rdfs:comment "Assigns an element to a community."@en .
+
+ragno:connectsTo a owl:ObjectProperty ;
+    rdfs:domain ragno:Element ;
+    rdfs:range ragno:Element ;
+    rdfs:subPropertyOf skos:semanticRelation ;
+    rdfs:label "connects to"@en ;
+    rdfs:comment "A general connection between elements."@en .
+
+ragno:hasWeight a owl:DatatypeProperty ;
+    rdfs:domain owl:ObjectProperty ;
+    rdfs:range xsd:float ;
+    rdfs:label "has weight"@en ;
+    rdfs:comment "The weight of an edge in the graph."@en .
+
+## Algorithm Properties
+ragno:hasPPRScore a owl:DatatypeProperty ;
+    rdfs:domain ragno:Element ;
+    rdfs:range xsd:float ;
+    rdfs:label "has PPR score"@en ;
+    rdfs:comment "The Personalized PageRank score of an element."@en .
+
+ragno:hasSimilarityScore a owl:DatatypeProperty ;
+    rdfs:domain ragno:Element ;
+    rdfs:range xsd:float ;
+    rdfs:label "has similarity score"@en ;
+    rdfs:comment "The similarity score of an element to a query."@en .
+
+## Document and Corpus Properties
+ragno:hasDocument a owl:ObjectProperty ;
+    rdfs:domain ragno:Corpus ;
+    rdfs:range ragno:Document ;
+    rdfs:subPropertyOf prov:hadMember ;
+    rdfs:label "has document"@en ;
+    rdfs:comment "Links a corpus to a document."@en .
+
+## Query Properties
+ragno:hasQueryText a owl:DatatypeProperty ;
+    rdfs:domain ragno:Query ;
+    rdfs:range xsd:string ;
+    rdfs:label "has query text"@en ;
+    rdfs:comment "The text of a query."@en .
+
+ragno:hasQueryEmbedding a owl:ObjectProperty ;
+    rdfs:domain ragno:Query ;
+    rdfs:range ragno:Embedding ;
+    rdfs:label "has query embedding"@en ;
+    rdfs:comment "Links a query to its vector embedding."@en .
+
+ragno:hasEntryNode a owl:ObjectProperty ;
+    rdfs:domain ragno:Query ;
+    rdfs:range ragno:Element ;
+    rdfs:subPropertyOf prov:used ;
+    rdfs:label "has entry node"@en ;
+    rdfs:comment "Links a query to an entry node."@en .
+
+ragno:hasCrossNode a owl:ObjectProperty ;
+    rdfs:domain ragno:Query ;
+    rdfs:range ragno:Element ;
+    rdfs:subPropertyOf prov:wasInfluencedBy ;
+    rdfs:label "has cross node"@en ;
+    rdfs:comment "Links a query to a cross node found through PPR."@en .
+
+ragno:hasRetrievalNode a owl:ObjectProperty ;
+    rdfs:domain ragno:Query ;
+    rdfs:range ragno:Element ;
+    rdfs:subPropertyOf prov:generated ;
+    rdfs:label "has retrieval node"@en ;
+    rdfs:comment "Links a query to a node in the final retrieval set."@en .
+
+# Embedding Properties
+ragno:hasVector a owl:DatatypeProperty ;
+    rdfs:domain ragno:Embedding ;
+    rdfs:range xsd:string ;
+    rdfs:label "has vector"@en ;
+    rdfs:comment "The vector representation as a serialized string."@en .

@@ -1,6 +1,12 @@
 # Ragno Ontology
 
-Ragno (Italian for "spider") is an RDF/OWL ontology for graph-based Retrieval-Augmented Generation (RAG), based on the NodeRAG framework.
+Ragno is an RDF/OWL ontology for describing graph knowledgebases. The aim is to represent diverse kinds of information in a coherent fashion to allow systematic retrieval for purposes such as Retrieval Augmented Generation (RAG) with LLMs.
+
+**Status: 2025-05-25 :** terms should be adequate to begin testing in experimental deployment. Docs currently mostly AI-generated, manual intervention required.
+
+*I had a rough draft of a model in mind, which I'd been just-in-time developing for [Semem](https://github.com/danja/semem), "Semantic Memory", but then stumbled on the paper [NodeRAG: Structuring Graph-based RAG with Heterogenous Nodes](https://arxiv.org/abs/2504.11544) which was a very close fit, on top of which the authors have developed algorithm strategies to use it, so with minor changes to terminology and a representation in RDF, here we go.*
+
+---
 
 ## Overview
 

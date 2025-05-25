@@ -1,0 +1,157 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ragno: <http://purl.org/stuff/ragno/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix ex: <http://example.org/instance#> .
+
+# Document and Corpus
+ex:corpus1 a ragno:Corpus ;
+    rdfs:label "AI Research Corpus" ;
+    skos:prefLabel "AI Research Knowledge Base"@en .
+
+ex:doc1 a ragno:Document ;
+    rdfs:label "AI Innovations Paper" ;
+    ragno:content "Geoffrey Hinton was awarded the Nobel Prize in 2023 for his groundbreaking contributions to artificial intelligence, particularly in deep learning. His pioneering work on backpropagation laid the foundation for modern neural networks, influencing both academia and industry." ;
+    prov:generatedAtTime "2023-10-15T10:00:00Z"^^xsd:dateTime .
+
+ex:corpus1 ragno:hasDocument ex:doc1 .
+
+# Text Elements (formerly Text Chunks)
+ex:text1 a ragno:TextElement ;
+    ragno:content "Geoffrey Hinton was awarded the Nobel Prize in 2023 for his groundbreaking contributions to artificial intelligence, particularly in deep learning." ;
+    ragno:hasSourceDocument ex:doc1 ;
+    ragno:isRetrievable true ;
+    ragno:isEntryPoint false ;
+    skos:inScheme ex:corpus1 .
+
+ex:text2 a ragno:TextElement ;
+    ragno:content "His pioneering work on backpropagation laid the foundation for modern neural networks, influencing both academia and industry." ;
+    ragno:hasSourceDocument ex:doc1 ;
+    ragno:isRetrievable true ;
+    ragno:isEntryPoint false ;
+    skos:inScheme ex:corpus1 .
+
+# Entities
+ex:entity1 a ragno:Entity ;
+    rdfs:label "Geoffrey Hinton" ;
+    skos:prefLabel "Geoffrey Hinton"@en ;
+    ragno:isRetrievable false ;
+    ragno:isEntryPoint true .
+
+ex:entity2 a ragno:Entity ;
+    rdfs:label "Nobel Prize" ;
+    skos:prefLabel "Nobel Prize"@en ;
+    ragno:isRetrievable false ;
+    ragno:isEntryPoint true .
+
+ex:entity3 a ragno:Entity ;
+    rdfs:label "artificial intelligence" ;
+    skos:prefLabel "artificial intelligence"@en ;
+    skos:altLabel "AI"@en ;
+    ragno:isRetrievable false ;
+    ragno:isEntryPoint true .
+
+# Relationships
+ex:rel1 a ragno:Relationship ;
+    rdfs:label "was awarded" ;
+    ragno:hasSourceEntity ex:entity1 ;
+    ragno:hasTargetEntity ex:entity2 ;
+    ragno:content "Geoffrey Hinton received the Nobel Prize" ;
+    ragno:isRetrievable true ;
+    ragno:isEntryPoint false .
+
+# Units (formerly Semantic Units)
+ex:unit1 a ragno:Unit ;
+    ragno:content "Hinton was awarded the Nobel Prize for inventing backpropagation" ;
+    ragno:hasSourceDocument ex:doc1 ;
+    ragno:hasTextElement ex:text1 ;
+    ragno:isRetrievable true ;
+    ragno:isEntryPoint true ;
+    skos:notation "U1" .
+
+ex:unit2 a ragno:Unit ;
+    ragno:content "Backpropagation is fundamental to modern neural networks" ;
+    ragno:hasSourceDocument ex:doc1 ;
+    ragno:hasTextElement ex:text2 ;
+    ragno:isRetrievable true ;
+    ragno:isEntryPoint true ;
+    skos:notation "U2" .
+
+# Connect entities to units
+ex:entity1 ragno:hasUnit ex:unit1 .
+ex:entity2 ragno:hasUnit ex:unit1 .
+
+# Attributes
+ex:attr1 a ragno:Attribute ;
+    ragno:content "Geoffrey Hinton, often referred to as the 'Godfather of Deep Learning,' is a pioneer in the field of artificial intelligence. In 2023, he was awarded the Nobel Prize for his contributions to AI and deep learning." ;
+    ragno:isRetrievable true ;
+    ragno:isEntryPoint true ;
+    skos:note "Summarized from multiple sources" .
+
+ex:entity1 ragno:hasAttribute ex:attr1 .
+
+# Communities
+ex:community1 a ragno:Community ;
+    rdfs:label "AI Pioneers" ;
+    skos:prefLabel "AI Pioneers Community"@en .
+
+# Community Elements (formerly High-Level Elements)
+ex:ce1 a ragno:CommunityElement ;
+    ragno:content "The Nobel Prize is increasingly recognizing contributions to artificial intelligence, highlighting the field's growing importance and impact on society." ;
+    ragno:isRetrievable true ;
+    ragno:isEntryPoint true ;
+    skos:broader ex:community1 .
+
+# Core Elements (formerly High-Level Overview)
+ex:core1 a ragno:CoreElement ;
+    rdfs:label "AI Recognition Trend" ;
+    skos:prefLabel "AI Recognition Trend"@en ;
+    ragno:isRetrievable false ;
+    ragno:isEntryPoint true .
+
+ex:ce1 ragno:hasCoreElement ex:core1 .
+ex:community1 ragno:hasCommunityElement ex:ce1 .
+
+# Assign elements to communities
+ex:entity1 ragno:inCommunity ex:community1 .
+ex:entity3 ragno:inCommunity ex:community1 .
+ex:unit1 ragno:inCommunity ex:community1 .
+ex:attr1 ragno:inCommunity ex:community1 .
+
+# Embeddings
+ex:emb1 a ragno:Embedding ;
+    ragno:hasVector "[0.1, 0.2, 0.3, 0.4, 0.5]"^^xsd:string .
+
+ex:emb2 a ragno:Embedding ;
+    ragno:hasVector "[0.2, 0.3, 0.4, 0.5, 0.6]"^^xsd:string .
+
+# Assign embeddings to elements
+ex:unit1 ragno:hasEmbedding ex:emb1 .
+ex:unit2 ragno:hasEmbedding ex:emb2 .
+
+# Query example
+ex:query1 a ragno:Query ;
+    ragno:hasQueryText "Who received the Nobel Prize for AI?" ;
+    ragno:hasQueryEmbedding ex:emb3 ;
+    prov:startedAtTime "2024-01-15T14:30:00Z"^^xsd:dateTime .
+
+ex:emb3 a ragno:Embedding ;
+    ragno:hasVector "[0.15, 0.25, 0.35, 0.45, 0.55]"^^xsd:string .
+
+# Query results
+ex:query1 ragno:hasEntryNode ex:entity1 .
+ex:query1 ragno:hasEntryNode ex:entity2 .
+ex:query1 ragno:hasCrossNode ex:unit1 .
+ex:query1 ragno:hasCrossNode ex:attr1 .
+ex:query1 ragno:hasRetrievalNode ex:unit1 .
+ex:query1 ragno:hasRetrievalNode ex:attr1 .
+
+# PPR Scores
+ex:unit1 ragno:hasPPRScore "0.85"^^xsd:float .
+ex:attr1 ragno:hasPPRScore "0.72"^^xsd:float .
+
+# Similarity Scores
+ex:unit1 ragno:hasSimilarityScore "0.92"^^xsd:float .
+ex:attr1 ragno:hasSimilarityScore "0.88"^^xsd:float .
