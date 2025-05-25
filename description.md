@@ -63,6 +63,8 @@ The ontology organizes data into six named graphs:
 5. **Enrichment Graph** - Embeddings, semantic edges, text elements
 6. **Search Graph** - Queries and retrieval results
 
+*danja note - this level of compartmentality seems a bit mental in RDF-land*
+
 ## Query Processing
 
 Ragno supports a dual search approach:
