@@ -1,0 +1,100 @@
+classDiagram
+    class skos_Concept {
+        <<external>>
+    }
+    
+    class skos_Collection {
+        <<external>>
+    }
+    
+    class prov_Entity {
+        <<external>>
+    }
+    
+    class ragno_Element {
+        <<abstract>>
+        +content: string
+        +isEntryPoint: boolean
+        +hasPPRScore: float
+        +hasSimilarityScore: float
+    }
+    
+    class ragno_Entity {
+        Named entities
+    }
+    
+    class ragno_Relationship {
+        First-class relationship nodes
+    }
+    
+    class ragno_Unit {
+        Independent event units
+    }
+    
+    class ragno_Attribute {
+        Entity properties
+    }
+    
+    class ragno_TextElement {
+        Original text chunks
+    }
+    
+    class ragno_CommunityElement {
+        Community insights
+    }
+    
+    class ragno_IndexElement {
+        Search structures
+    }
+    
+    class ragno_Corpus {
+        Body of knowledge
+    }
+    
+    class ragno_Corpuscle {
+        Conceptual subset
+    }
+    
+    class ragno_Community {
+        Element clusters
+    }
+    
+    class ragno_Embedding {
+        +hasVector: string
+        +hasDimension: integer
+    }
+    
+    skos_Concept <|-- ragno_Element
+    ragno_Element <|-- ragno_Entity
+    ragno_Element <|-- ragno_Relationship
+    ragno_Element <|-- ragno_Unit
+    ragno_Element <|-- ragno_Attribute
+    ragno_Element <|-- ragno_TextElement
+    ragno_Element <|-- ragno_CommunityElement
+    ragno_Element <|-- ragno_IndexElement
+    
+    skos_Collection <|-- ragno_Corpus
+    skos_Collection <|-- ragno_Corpuscle
+    skos_Collection <|-- ragno_Community
+    
+    ragno_Element ..> skos_Concept : subType
+    ragno_Element ..> prov_Entity : hasSourceDocument
+    ragno_Element ..> ragno_Embedding : hasEmbedding
+    ragno_Element ..> ragno_Community : inCommunity
+    ragno_Element ..> ragno_Element : connectsTo
+    
+    ragno_Relationship ..> ragno_Entity : hasSourceEntity
+    ragno_Relationship ..> ragno_Entity : hasTargetEntity
+    
+    ragno_Entity ..> ragno_Unit : hasUnit
+    ragno_Entity ..> ragno_Attribute : hasAttribute
+    
+    ragno_Unit ..> ragno_TextElement : hasTextElement
+    
+    ragno_Community ..> ragno_CommunityElement : hasCommunityElement
+    
+    ragno_Corpus ..> ragno_Element : hasElement
+    ragno_Corpuscle ..> ragno_Element : hasElement
+    
+    ragno_Element ..> ragno_Corpus : inCorpus
+    ragno_Element ..> ragno_Corpuscle : inCorpuscle
