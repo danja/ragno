@@ -18,7 +18,7 @@ ragno: a owl:Ontology, skos:ConceptScheme, doap:Project ;
         foaf:name "Danny Ayers" ;
         foaf:homepage <https://danny.ayers.name>
     ] ;
-    owl:versionInfo "3.0" ;
+    owl:versionInfo "0.3.0" ;
     owl:imports <http://www.w3.org/2004/02/skos/core> ,
                 <http://www.w3.org/ns/prov-o#> ;
     skos:hasTopConcept ragno:Element ;
@@ -28,7 +28,7 @@ ragno: a owl:Ontology, skos:ConceptScheme, doap:Project ;
         doap:location <http://github.com/danja/ragno.git>
     ] ;
     doap:name "Ragno" ;
-    doap:shortdesc "Graph-based RAG ontology"@en ;
+    doap:shortdesc "Graph-based knowledge retrieval ontology"@en ;
     doap:programming-language "RDF/OWL" .
 
 # Core Classes

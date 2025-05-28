@@ -6,7 +6,7 @@ Ragno is an ontology for describing heterogenous knowledge bases and their graph
 
 *I had a rough draft of a model in mind, which I'd been just-in-time developing for [Semem](https://github.com/danja/semem) "Semantic Memory", but then stumbled on the paper [NodeRAG: Structuring Graph-based RAG with Heterogenous Nodes](https://arxiv.org/abs/2504.11544) which was a remarkably close fit, so I've integrated some ideas from there.*
 
-- [Reference (Namespace Doc)](namespace.md)
+- [Term Reference](namespace.md)
 - [Definition](ragno.ttl) - Turtle RDF
 
 ## Overview
