@@ -9,6 +9,8 @@ Ragno is an ontology for describing heterogenous knowledge bases and their graph
 - [Term Reference](namespace.md)
 - [Definition](ragno.ttl) - Turtle RDF
 
+![Ontology Diagram](ontology-diagram.pnd)
+
 ## Overview
 
 Ragno extends SKOS (Simple Knowledge Organization System) to model heterogeneous knowledge graphs with various element types that support semantic retrieval and graph-based navigation.

@@ -1,0 +1,93 @@
+classDiagram
+    %% External SKOS Classes
+    class Concept["skos:Concept"] {
+        <<external>>
+    }
+    
+    class Collection["skos:Collection"] {
+        <<external>>
+    }
+
+    %% Core Element Base
+    class Element["ragno:Element"] {
+        +content: string
+        +subType: skos:Concept
+        +isEntryPoint: boolean
+        +hasPPRScore: float
+        +hasSimilarityScore: float
+    }
+
+    %% Primary Element Types (Core Graph Components)
+    class Entity["ragno:Entity"] {
+        <<anchor>>
+    }
+    
+    class Relationship["ragno:Relationship"] {
+        <<connection>>
+    }
+    
+    class Unit["ragno:Unit"] {
+        <<semantic>>
+    }
+    
+    class Attribute["ragno:Attribute"] {
+        <<property>>
+    }
+
+    %% Secondary Element Types
+    class TextElement["ragno:TextElement"] {
+        <<text>>
+    }
+    
+    class CommunityElement["ragno:CommunityElement"] {
+        <<insight>>
+    }
+    
+    class IndexElement["ragno:IndexElement"] {
+        <<retrieval>>
+    }
+
+    %% Collection Classes (Vertical Group)
+    class Corpus["ragno:Corpus"] {
+        <<knowledge-base>>
+    }
+    
+    class Community["ragno:Community"] {
+        <<cluster>>
+    }
+    
+    class Corpuscle["ragno:Corpuscle"] {
+        <<subset>>
+    }
+
+    %% Inheritance Relationships
+    Concept <|-- Element
+    Collection <|-- Corpus
+    Collection <|-- Community
+    Collection <|-- Corpuscle
+    
+    Element <|-- Entity
+    Element <|-- Relationship
+    Element <|-- Unit
+    Element <|-- Attribute
+    Element <|-- TextElement
+    Element <|-- CommunityElement
+    Element <|-- IndexElement
+
+    %% Key Object Properties
+    Relationship --> Entity : hasSourceEntity
+    Relationship --> Entity : hasTargetEntity
+    Entity --> Unit : hasUnit
+    Entity --> Attribute : hasAttribute
+    Unit --> TextElement : hasTextElement
+    Community --> CommunityElement : hasCommunityElement
+    
+    %% Collection Relationships
+    Corpus --> Element : hasElement
+    Corpuscle --> Element : hasElement
+    Element --> Community : inCommunity
+    Element --> Corpus : inCorpus
+    Element --> Corpuscle : inCorpuscle
+    
+    %% Self-reference
+    Element --> Element : connectsTo
