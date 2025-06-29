@@ -9,7 +9,7 @@ Ragno is an ontology for describing heterogenous knowledge bases and their graph
 - [Term Reference](namespace.md)
 - [Definition](ragno.ttl) - Turtle RDF
 
-![Ontology Diagram](ontology-diagram.pnd)
+![Ontology Diagram](ontology-diagram.png)
 
 ## Overview
 
