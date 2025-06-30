@@ -1,0 +1,1 @@
+Add ragno:VectorEmbedding type (alongside ragno:TextElement)
