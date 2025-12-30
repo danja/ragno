@@ -33,11 +33,18 @@ Namespace : `<http://purl.org/stuff/ragno/>`
 - **CommunityElement** - Cluster within graph
 - **IndexElement** - Search/retrieval-oriented structures (embeddings, keywords)
 
+## ZPT Alignment
+
+Ragno provides the element hierarchy used by ZPT (Zoom-Pan-Tilt) in Semem:
+
+`Attribute → Entity → TextElement → Unit → CommunityElement → Corpus`
+
+Corpuscles remain the primary subset mechanism for pan scoping.
+
 ## Key Features
 
 - Support for standard RDF/OWL tooling, graph algorithms, similarity techniques, LLM-friendly
 - Scale-independent knowledge organization
 - SKOS integration for concept organization
 - PROV-O integration for provenance tracking
-
 

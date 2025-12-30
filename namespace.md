@@ -212,6 +212,14 @@ ex:myCorpus a ragno:Corpus ;
     skos:member ex:entity1, ex:unit1 .
 ```
 
+## ZPT Alignment
+
+Ragno element types map directly to the ZPT zoom ladder used in Semem:
+
+`Attribute → Entity → TextElement → Unit → CommunityElement → Corpus`
+
+Corpuscles remain the canonical way to define scoped subsets for ZPT pan operations.
+
 ### Defining Element Subtypes
 ```turtle
 ex:PersonEntity a ragno:Entity ;
